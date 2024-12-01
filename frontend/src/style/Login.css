@@ -1,0 +1,76 @@
+/* CSS Variables for color scheme */
+:root {
+    --black: #000000ff;
+    --oxford-blue: #14213dff;
+    --orange-web: #fca311ff;
+    --platinum: #e5e5e5ff;
+    --white: #ffffffff;
+    --gradient-radial: radial-gradient(#000000ff, #14213dff, #fca311ff, #e5e5e5ff, #ffffffff);
+}
+
+/* Login Page Styles */
+.login-page {
+    height: 100vh;
+    background: var(--white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-container {
+    background-color: var(--white);
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    color: var(--white);
+}
+
+.login-header {
+    text-align: center;
+    font-weight: bold;
+    font-size: 2rem;
+    color: var(--oxford-blue);
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid var(--platinum);
+    background-color: var(--white);
+    color: var(--oxford-blue);
+    font-size: 1rem;
+}
+
+input:focus {
+    border-color: var(--orange-web);
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--orange-web);
+    border: none;
+    border-radius: 5px;
+    color: var(--white);
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e5801d; /* Darker shade of the orange color */
+}
+
+.error-message {
+    color: var(--orange-web);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 10px;
+}

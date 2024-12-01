@@ -1,0 +1,150 @@
+/* Inventory Page Styles */
+.inventory-page {
+    display: flex;
+}
+
+.inventory-content {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 250px;
+}
+
+.inventory-header {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.inventory-search {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+    padding: 10px 0;
+    border-bottom: 2px solid #ddd;
+}
+
+.inventory-search input {
+    padding: 8px;
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.inventory-table-container {
+    overflow-x: auto;
+    max-height: 78vh;
+    margin-top: 20px;
+    border-radius: 20px;
+    border-color: 1px solid var(--platinum);
+    background-color: white;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Shadow behind the table */
+    position: relative;
+}
+
+/* Custom scrollbar for modern browsers */
+.inventory-table-container::-webkit-scrollbar {
+    height: 8px;  /* Horizontal scrollbar */
+    width: 8px;   /* Vertical scrollbar */
+}
+
+.inventory-table-container::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
+}
+
+.inventory-table-container::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+}
+
+.inventory-table-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    position: relative;
+    border-top: 0 solid var(--oxford-blue);
+    background-color: white;
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);  /* Shadow for the table */
+}
+
+.inventory-table th, .inventory-table td {
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.inventory-table th {
+    background-color: var(--oxford-blue);
+    position: sticky;
+    top: 0;
+    color: var(--white);
+    z-index: 2;
+    border-top: 0 solid black;
+}
+
+.inventory-table tr:hover {
+    background-color: var(--orange-web);
+    transition: background-color 0.3s ease;  /* Smooth transition */
+}
+
+.inventory-table td {
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.button-container {
+    margin-left: auto;  /* Push buttons to the right */
+    display: flex;
+    gap: 10px;
+}
+
+.add-button, .csv-button {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    cursor: pointer;
+    color: black;
+    font-size: 16px;
+    width: 250px;
+}
+
+.csv-button{
+    background-color: var(--platinum);
+}
+
+.filter-button:hover, .clear-button:hover {
+    background-color: #555;
+}
+
+.filter-button:focus, .clear-button:focus {
+    outline: none;
+}
+
+/* Action button styles */
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.action-button img {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s;
+}
+
+.action-button:hover img {
+    transform: scale(1.2);
+}
+
+
+
