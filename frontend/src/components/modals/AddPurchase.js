@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import '../../style/Modal.css';
+import '../../style/Message.css';
 import CloseIcon from '../../icons/close-icon.svg';
+import Swal from 'sweetalert2'
 
-const Modal = ({ onClose }) => {
+const Modal = ({ onClose, fetchInventoryRecords }) => {
     const [activeTab, setActiveTab] = useState('existing');
     const [existingItemNumber, setExistingItemNumber] = useState('');
     const [existingQuantity, setExistingQuantity] = useState('');
@@ -17,40 +19,138 @@ const Modal = ({ onClose }) => {
         weight: '',
         unitCost: '',
     });
+const [successMessage, setSuccessMessage] = useState('');
+const [errorMessage, setErrorMessage] = useState('');
 
-    const handleNewItemChange = (e) => {
-        const { name, value } = e.target;
-        setNewItemData({ ...newItemData, [name]: value });
-    };
+const handleNewItemChange = (e) => {
+    const { name, value } = e.target;
+    setNewItemData({ ...newItemData, [name]: value });
+};
 
-    const handleAddClick = async () => {
-        if (activeTab === 'existing') {
-            // Existing item logic (already written, unchanged)
-            console.log('Adding Existing Item:', { existingItemNumber, existingQuantity });
-        } else {
-            // New item logic
-            try {
-                const response = await fetch('http://localhost:5000/api/inventory', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(newItemData),
-                });
-    
-                if (response.ok) {
-                    console.log('New item added successfully');
-                    onClose();  // Close the modal after successful addition
-                } else {
-                    console.error('Failed to add new item');
-                }
-            } catch (error) {
-                console.error('Error adding new item:', error);
-            }
+const handleAddClick = async () => {
+    if (activeTab === 'existing') {
+        if (!existingItemNumber || !existingQuantity) {
+            // Display error pop-up if required fields are missing
+            Swal.fire({
+                icon: 'error',
+                title: 'Missing Fields',
+                text: 'Item Number and Quantity are required.',
+                confirmButtonText: 'OK',
+            });
+            return;
         }
-    };
-    
-    
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/inventory/${existingItemNumber.toLowerCase()}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quantity: Number(existingQuantity) }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Display success pop-up
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    confirmButtonText: 'OK',
+                });
+
+                setSuccessMessage(data.message)                
+                onClose(); // Close modal on success
+
+            } else {
+                const errorData = await response.json();
+
+                // Handle error response
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorData.message || 'Failed to update item quantity.',
+                    confirmButtonText: 'OK',
+                });
+
+                setErrorMessage(errorData.message || 'Failed to update item quantity.');
+            }
+        } catch (error) {
+            // Handle unexpected error
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error updating item quantity.',
+                confirmButtonText: 'OK',
+            });
+
+            setErrorMessage('Error updating item quantity.');
+            console.error(error);
+        }
+    } else {
+        // New item logic
+        if (!newItemData.itemNumber || !newItemData.itemName || !newItemData.quantity) {
+            // Display error pop-up if required fields are missing
+            Swal.fire({
+                icon: 'error',
+                title: 'Missing Fields',
+                text: 'Item Number, Item Name, and Quantity are required for new items.',
+                confirmButtonText: 'OK',
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newItemData),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Display success pop-up
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    confirmButtonText: 'OK',
+                });
+
+                setSuccessMessage(data.message);
+                onClose(); // Close modal on success
+            } else {
+                const errorData = await response.json();
+
+                // Handle error response
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorData.message || 'Failed to add new item.',
+                    confirmButtonText: 'OK',
+                });
+
+                setErrorMessage(errorData.message || 'Failed to add new item.');
+            }
+        } catch (error) {
+            // Handle unexpected error
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error adding new item.',
+                confirmButtonText: 'OK',
+            });
+
+            setErrorMessage('Error adding new item.');
+            console.error(error);
+        }
+    }
+};
+
 
     return (
         <div className="modal-overlay">
