@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
 import Modal from './modals/AddPurchase'; 
-import EditIcon from '../icons/edit-icon.svg';
-import DeleteIcon from '../icons/delete-icon.svg';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
-import Swal from 'sweetalert2';
 
 const InventoryPage = () => {
     const [itemNumber, setItemNumber] = useState('');
@@ -14,7 +13,25 @@ const InventoryPage = () => {
     const [category, setCategory] = useState('');
     const [inventoryRecords, setInventoryRecords] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(false); // State to track login status
+    const navigate = useNavigate();
 
+    // Function to check if the user is logged in
+    const checkAuth = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/auth-check', { withCredentials: true });
+            if (response.data.loggedIn) {
+                setLoggedIn(true);
+            } else {
+                navigate('/'); // Redirect to login page if not authenticated
+            }
+        } catch (error) {
+            console.error('Error checking authentication:', error);
+            navigate('/'); // Redirect to login page if there's an error
+        }
+    };
+
+    // Function to fetch inventory records
     const fetchInventoryRecords = async () => {
         try {
             const response = await axios.get('http://localhost:5000/api/inventory', {
@@ -30,6 +47,7 @@ const InventoryPage = () => {
         }
     };
 
+    // Function to delete an inventory record
     const deleteInventoryRecord = async (itemNumber) => {
         try {
             const response = await axios.delete(`http://localhost:5000/api/inventory/${itemNumber}`);
@@ -48,12 +66,22 @@ const InventoryPage = () => {
             });
         }
     };
-    
-    
 
+    // Check authentication when the component mounts
     useEffect(() => {
-        fetchInventoryRecords();
-    }, [itemNumber, itemName, category]);
+        checkAuth();
+    }, []);
+
+    // Fetch inventory records when filters change
+    useEffect(() => {
+        if (loggedIn) {
+            fetchInventoryRecords();
+        }
+    }, [itemNumber, itemName, category, loggedIn]);
+
+    if (!loggedIn) {
+        return null; // Show nothing while checking authentication or if not logged in
+    }
 
     return (
         <div className="inventory-page">
@@ -125,9 +153,11 @@ const InventoryPage = () => {
                                     <td>{`$ ${record['Unit Cost(AUD)']}`}</td>
                                     <td>
                                         <button className="action-button edit-button">
-                                            <img src={EditIcon} alt="Edit" />
+                                            Edit
                                         </button>
-                                        <button className="action-button delete-button" onClick={() => {
+                                        <button
+                                            className="action-button delete-button"
+                                            onClick={() => {
                                                 Swal.fire({
                                                     title: `Are you sure you want to delete Item Number: ${record['Item Number']}?`,
                                                     text: "This action cannot be undone.",
@@ -143,9 +173,8 @@ const InventoryPage = () => {
                                                 });
                                             }}
                                         >
-                                            <img src={DeleteIcon} alt="Delete" />
+                                            Delete
                                         </button>
-
                                     </td>
                                 </tr>
                             ))}
