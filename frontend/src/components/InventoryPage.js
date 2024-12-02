@@ -51,6 +51,18 @@ const InventoryPage = () => {
         }
     };
 
+    // Define CSV headers for inventory
+    const csvHeaders = [
+        { label: 'Item Number', key: 'Item Number' },
+        { label: 'Item Name', key: 'Item Name' },
+        { label: 'Total Quantity', key: 'Total Quantity' },
+        { label: 'Category', key: 'Category' },
+        { label: 'Length(cm)', key: 'Length(cm)' },
+        { label: 'Width(cm)', key: 'Width(cm)' },
+        { label: 'Height(cm)', key: 'Height(cm)' },
+        { label: 'Unit Cost(AUD)', key: 'Unit Cost(AUD)' },
+    ];
+
     // Function to delete an inventory record
     const deleteInventoryRecord = async (itemNumber) => {
         try {
@@ -120,7 +132,14 @@ const InventoryPage = () => {
                         <button className="add-button" onClick={() => setIsModalOpen(true)}>
                             Add Purchases
                         </button>
-                        <button className="csv-button">Export CSV</button>
+                        <CSVLink
+                            data={inventoryRecords}
+                            headers={csvHeaders}
+                            filename="inventory_overview.csv"
+                            className="csv-button"
+                        >
+                            Export CSV
+                        </CSVLink>
                     </div>
                 </div>
 
