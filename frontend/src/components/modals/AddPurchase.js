@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import '../../style/Modal.css';
-import '../../style/Message.css';
 import CloseIcon from '../../icons/close-icon.svg';
 import Swal from 'sweetalert2'
 
@@ -153,8 +152,6 @@ const Modal = ({ onClose, fetchInventoryRecords }) => {
             }
         }
     };
-
-
 
     return (
         <div className="modal-overlay">

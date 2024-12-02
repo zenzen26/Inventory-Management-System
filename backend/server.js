@@ -30,7 +30,7 @@ app.get('/api/auth-check', (req, res) => {
 app.get('/api/inventory', inventoryController.getInventoryRecords);
 
 // Route to update existing inventory item (increment total quantity)
-app.put('/api/inventory/:itemNumber', inventoryController.updateInventoryRecord);
+app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting);
 
 // Route to create a new inventory item
 app.post('/api/inventory', inventoryController.createInventoryRecord);

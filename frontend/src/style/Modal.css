@@ -10,15 +10,21 @@
     justify-content: center;
     align-items: center;
     z-index: 999;
+    opacity: 1;
 }
 
 .modal-content {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    width: 50%;
-    max-width: 600px;
+    width: 100%; /* Make it more flexible */
+    max-width: 600px; /* Max width to ensure it doesn't grow too large */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.modal-overlay .modal-content {
+    background: #fff;
+    opacity: 1;
 }
 
 .modal-header {
@@ -75,12 +81,13 @@ label {
 
 .dimensions {
     display: flex;
-    flex-wrap: wrap;
     gap: 15px;
+    justify-content: space-between; /* Ensure equal spacing between the items */
+    width: 100%; /* Ensure the dimensions container takes up the full width */
 }
 
 .dimensions label {
-    flex: 1 1 calc(50% - 15px); /* Responsive grid-like layout */
+    width: 100%; /* Allow labels to take full width within each input container */
 }
 
 input {
@@ -96,6 +103,7 @@ input {
 .modal-footer {
     display: flex;
     justify-content: flex-end;
+    margin-top: 10px;
 }
 
 .modal-add-button {
@@ -106,7 +114,6 @@ input {
     border-radius: 5px;
     cursor: pointer;
 }
-
 .modal-add-button:hover {
     background: rgb(189, 118, 60);
 }

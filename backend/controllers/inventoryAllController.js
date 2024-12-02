@@ -36,13 +36,13 @@ const getInventoryRecords = (req, res) => {
 };
 
 // Function to update an existing inventory item
-const updateInventoryRecord = (req, res) => {
+const addPurchasetoExisting = (req, res) => {
     const { itemNumber } = req.params;
     const { quantity } = req.body; // The quantity to be added
 
     // Update the total quantity in the inventory
     const query = `UPDATE inventories
-                   SET "Quantity" = "Quantity" + ?
+                   SET "Total Quantity" = "Total Quantity" + ?
                    WHERE "Item Number" = ?`;
 
     db.run(query, [quantity, itemNumber], function (err) {
@@ -82,4 +82,4 @@ const createInventoryRecord = (req, res) => {
     });
 };
 
-module.exports = { getInventoryRecords, updateInventoryRecord, createInventoryRecord };
+module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord };
