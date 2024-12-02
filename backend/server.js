@@ -35,6 +35,9 @@ app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting)
 // Route to create a new inventory item
 app.post('/api/inventory', inventoryController.createInventoryRecord);
 
+// Route to delete an inventory item
+app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord);
+
 // Starting the server
 const PORT = 5000;
 app.listen(PORT, () => {

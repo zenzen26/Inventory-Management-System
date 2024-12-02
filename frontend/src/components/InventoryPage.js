@@ -6,6 +6,7 @@ import EditIcon from '../icons/edit-icon.svg';
 import DeleteIcon from '../icons/delete-icon.svg';
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
+import Swal from 'sweetalert2';
 
 const InventoryPage = () => {
     const [itemNumber, setItemNumber] = useState('');
@@ -28,6 +29,27 @@ const InventoryPage = () => {
             console.error('Error fetching inventory records:', error);
         }
     };
+
+    const deleteInventoryRecord = async (itemNumber) => {
+        try {
+            const response = await axios.delete(`http://localhost:5000/api/inventory/${itemNumber}`);
+            Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: response.data.message,
+            });
+            fetchInventoryRecords(); // Refresh the table after deletion
+        } catch (error) {
+            console.error('Error deleting inventory record:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to delete the inventory record.',
+            });
+        }
+    };
+    
+    
 
     useEffect(() => {
         fetchInventoryRecords();
@@ -105,9 +127,25 @@ const InventoryPage = () => {
                                         <button className="action-button edit-button">
                                             <img src={EditIcon} alt="Edit" />
                                         </button>
-                                        <button className="action-button delete-button">
+                                        <button className="action-button delete-button" onClick={() => {
+                                                Swal.fire({
+                                                    title: `Are you sure you want to delete Item Number: ${record['Item Number']}?`,
+                                                    text: "This action cannot be undone.",
+                                                    icon: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#d33',
+                                                    cancelButtonColor: '#3085d6',
+                                                    confirmButtonText: 'Yes, delete it!',
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        deleteInventoryRecord(record['Item Number']);
+                                                    }
+                                                });
+                                            }}
+                                        >
                                             <img src={DeleteIcon} alt="Delete" />
                                         </button>
+
                                     </td>
                                 </tr>
                             ))}

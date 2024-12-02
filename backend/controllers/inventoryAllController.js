@@ -82,4 +82,24 @@ const createInventoryRecord = (req, res) => {
     });
 };
 
-module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord };
+// Function to delete an inventory record
+const deleteInventoryRecord = (req, res) => {
+    const { itemNumber } = req.params;
+
+    const query = 'DELETE FROM inventories WHERE "Item Number" = ?';
+
+    db.run(query, [itemNumber], function (err) {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ message: 'Internal server error.' });
+        }
+
+        // If no rows were affected, the item was not found
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Item not found.' });
+        }
+        res.json({ message: 'Item deleted successfully.' });
+    });
+};
+
+module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord, deleteInventoryRecord };
