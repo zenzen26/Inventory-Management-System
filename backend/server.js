@@ -2,12 +2,15 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const authController = require('./controllers/authController');  // For logins
-const inventoryController = require('./controllers/inventoryAllController'); // For inventories
+const inventoryController = require('./controllers/inventoryAllController'); // For inventories overview
+const inventoryDetailsController = require('./controllers/inventoryDetailsController'); // For inventories details
 
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json()); // To parse JSON bodies
+
+//AUTHENTICATION ROUTES
 app.use(session({
     secret: 'secretkey',
     resave: false,
@@ -26,6 +29,7 @@ app.get('/api/auth-check', (req, res) => {
     }
 });
 
+// INVENTORY OVERVIEW ROUTES
 // Inventory route to search for records
 app.get('/api/inventory', inventoryController.getInventoryRecords);
 
@@ -37,6 +41,11 @@ app.post('/api/inventory', inventoryController.createInventoryRecord);
 
 // Route to delete an inventory item
 app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord);
+
+// INVENTORY DETAILS ROUTES
+// Inventory details route to search for records
+app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords);
+
 
 // Starting the server
 const PORT = 5000;

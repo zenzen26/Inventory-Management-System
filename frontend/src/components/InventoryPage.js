@@ -6,6 +6,9 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
+import EditIcon from '../icons/edit-icon.svg';
+import DeleteIcon from '../icons/delete-icon.svg';
+
 
 const InventoryPage = () => {
     const [itemNumber, setItemNumber] = useState('');
@@ -153,7 +156,7 @@ const InventoryPage = () => {
                                     <td>{`$ ${record['Unit Cost(AUD)']}`}</td>
                                     <td>
                                         <button className="action-button edit-button">
-                                            Edit
+                                        <img src={EditIcon} alt="Edit" />
                                         </button>
                                         <button
                                             className="action-button delete-button"
@@ -173,7 +176,7 @@ const InventoryPage = () => {
                                                 });
                                             }}
                                         >
-                                            Delete
+                                            <img src={DeleteIcon} alt="Delete" />
                                         </button>
                                     </td>
                                 </tr>
