@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import axios from 'axios';
 import Modal from './modals/AddPurchase'; 
 import Swal from 'sweetalert2';
+import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
