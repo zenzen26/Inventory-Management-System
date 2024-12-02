@@ -28,7 +28,7 @@ const InventoryPage = () => {
             console.error('Error fetching inventory records:', error);
         }
     };
-    
+
     useEffect(() => {
         fetchInventoryRecords();
     }, [itemNumber, itemName, category]);
@@ -117,7 +117,7 @@ const InventoryPage = () => {
             </div>
 
             {/* Modal */}
-            {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />}
+            {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} fetchInventoryRecords={fetchInventoryRecords} />}
         </div>
     );
 };

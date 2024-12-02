@@ -19,137 +19,141 @@ const Modal = ({ onClose, fetchInventoryRecords }) => {
         weight: '',
         unitCost: '',
     });
-const [successMessage, setSuccessMessage] = useState('');
-const [errorMessage, setErrorMessage] = useState('');
 
-const handleNewItemChange = (e) => {
-    const { name, value } = e.target;
-    setNewItemData({ ...newItemData, [name]: value });
-};
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
-const handleAddClick = async () => {
-    if (activeTab === 'existing') {
-        if (!existingItemNumber || !existingQuantity) {
-            // Display error pop-up if required fields are missing
-            Swal.fire({
-                icon: 'error',
-                title: 'Missing Fields',
-                text: 'Item Number and Quantity are required.',
-                confirmButtonText: 'OK',
-            });
-            return;
-        }
+    const handleNewItemChange = (e) => {
+        const { name, value } = e.target;
+        setNewItemData({ ...newItemData, [name]: value });
+    };
 
-        try {
-            const response = await fetch(`http://localhost:5000/api/inventory/${existingItemNumber.toLowerCase()}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ quantity: Number(existingQuantity) }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-
-                // Display success pop-up
+    const handleAddClick = async () => {
+        if (activeTab === 'existing') {
+            if (!existingItemNumber || !existingQuantity) {
+                // Display error pop-up if required fields are missing
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: data.message,
+                    icon: 'error',
+                    title: 'Missing Fields',
+                    text: 'Item Number and Quantity are required.',
                     confirmButtonText: 'OK',
                 });
+                return;
+            }
 
-                setSuccessMessage(data.message)                
-                onClose(); // Close modal on success
+            try {
+                const response = await fetch(`http://localhost:5000/api/inventory/${existingItemNumber.toLowerCase()}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ quantity: Number(existingQuantity) }),
+                });
 
-            } else {
-                const errorData = await response.json();
+                if (response.ok) {
+                    const data = await response.json();
 
-                // Handle error response
+                    // Display success pop-up
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonText: 'OK',
+                    });
+
+                    setSuccessMessage(data.message);
+                    fetchInventoryRecords(); // Refresh inventory records
+                    onClose(); // Close modal on success
+
+                } else {
+                    const errorData = await response.json();
+
+                    // Handle error response
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorData.message || 'Failed to update item quantity.',
+                        confirmButtonText: 'OK',
+                    });
+
+                    setErrorMessage(errorData.message || 'Failed to update item quantity.');
+                }
+            } catch (error) {
+                // Handle unexpected error
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: errorData.message || 'Failed to update item quantity.',
+                    text: 'Error updating item quantity.',
                     confirmButtonText: 'OK',
                 });
 
-                setErrorMessage(errorData.message || 'Failed to update item quantity.');
+                setErrorMessage('Error updating item quantity.');
+                console.error(error);
             }
-        } catch (error) {
-            // Handle unexpected error
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error updating item quantity.',
-                confirmButtonText: 'OK',
-            });
-
-            setErrorMessage('Error updating item quantity.');
-            console.error(error);
-        }
-    } else {
-        // New item logic
-        if (!newItemData.itemNumber || !newItemData.itemName || !newItemData.quantity) {
-            // Display error pop-up if required fields are missing
-            Swal.fire({
-                icon: 'error',
-                title: 'Missing Fields',
-                text: 'Item Number, Item Name, and Quantity are required for new items.',
-                confirmButtonText: 'OK',
-            });
-            return;
-        }
-
-        try {
-            const response = await fetch('http://localhost:5000/api/inventory', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newItemData),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-
-                // Display success pop-up
+        } else {
+            // New item logic
+            if (!newItemData.itemNumber || !newItemData.itemName || !newItemData.quantity) {
+                // Display error pop-up if required fields are missing
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: data.message,
+                    icon: 'error',
+                    title: 'Missing Fields',
+                    text: 'Item Number, Item Name, and Quantity are required for new items.',
                     confirmButtonText: 'OK',
                 });
+                return;
+            }
 
-                setSuccessMessage(data.message);
-                onClose(); // Close modal on success
-            } else {
-                const errorData = await response.json();
+            try {
+                const response = await fetch('http://localhost:5000/api/inventory', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newItemData),
+                });
 
-                // Handle error response
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Display success pop-up
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonText: 'OK',
+                    });
+
+                    setSuccessMessage(data.message);
+                    fetchInventoryRecords(); // Refresh inventory records
+                    onClose(); // Close modal on success
+                } else {
+                    const errorData = await response.json();
+
+                    // Handle error response
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorData.message || 'Failed to add new item.',
+                        confirmButtonText: 'OK',
+                    });
+
+                    setErrorMessage(errorData.message || 'Failed to add new item.');
+                }
+            } catch (error) {
+                // Handle unexpected error
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: errorData.message || 'Failed to add new item.',
+                    text: 'Error adding new item.',
                     confirmButtonText: 'OK',
                 });
 
-                setErrorMessage(errorData.message || 'Failed to add new item.');
+                setErrorMessage('Error adding new item.');
+                console.error(error);
             }
-        } catch (error) {
-            // Handle unexpected error
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error adding new item.',
-                confirmButtonText: 'OK',
-            });
-
-            setErrorMessage('Error adding new item.');
-            console.error(error);
         }
-    }
-};
+    };
+
 
 
     return (
