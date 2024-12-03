@@ -4,10 +4,11 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
+import AddInStockModal from './modals/AddInStock'; 
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
-import EditIcon from '../icons/edit-icon.svg';
-import DeleteIcon from '../icons/delete-icon.svg';
+import EditIcon from '../icons/edit-icon.svg'; // Imported Edit Icon
+import DeleteIcon from '../icons/delete-icon.svg'; // Imported Delete Icon
 
 const InventoryDetailsPage = () => {
     const [serialNumber, setSerialNumber] = useState('');
@@ -15,6 +16,7 @@ const InventoryDetailsPage = () => {
     const [supplierId, setSupplierId] = useState('');
     const [soldStatus, setSoldStatus] = useState('');
     const [inventoryDetailsRecords, setInventoryDetailsRecords] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
 
@@ -135,7 +137,7 @@ const InventoryDetailsPage = () => {
                         onChange={(e) => setSoldStatus(e.target.value)}
                     />
                     <div className="button-container">
-                        <button className="add-button">
+                        <button className="add-button"  onClick={() => setIsModalOpen(true)}>
                             Add In-Stock Arrival
                         </button>
                         <CSVLink
@@ -202,7 +204,11 @@ const InventoryDetailsPage = () => {
                     </table>
                 </div>
             </div>
+
+            {isModalOpen && <AddInStockModal onClose={() => setIsModalOpen(false)} fetchInventoryDetailsRecords={fetchInventoryDetailsRecords} />}
+
         </div>
+        
     );
 };
 

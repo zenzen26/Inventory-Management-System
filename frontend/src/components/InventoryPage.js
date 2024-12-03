@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import axios from 'axios';
-import Modal from './modals/AddPurchase'; 
+import AddPurchaseModal from './modals/AddPurchase'; 
 import Swal from 'sweetalert2';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router
@@ -206,8 +206,8 @@ const InventoryPage = () => {
                 </div>
             </div>
 
-            {/* Modal */}
-            {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} fetchInventoryRecords={fetchInventoryRecords} />}
+            {/* Add Purchase Modal */}
+            {isModalOpen && <AddPurchaseModal onClose={() => setIsModalOpen(false)} fetchInventoryRecords={fetchInventoryRecords} />}
         </div>
     );
 };

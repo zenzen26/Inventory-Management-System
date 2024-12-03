@@ -3,7 +3,7 @@ import '../../style/Modal.css';
 import CloseIcon from '../../icons/close-icon.svg';
 import Swal from 'sweetalert2'
 
-const Modal = ({ onClose, fetchInventoryRecords }) => {
+const AddPurchaseModal = ({ onClose, fetchInventoryRecords }) => {
     const [activeTab, setActiveTab] = useState('existing');
     const [existingItemNumber, setExistingItemNumber] = useState('');
     const [existingQuantity, setExistingQuantity] = useState('');
@@ -302,4 +302,4 @@ const Modal = ({ onClose, fetchInventoryRecords }) => {
     );
 };
 
-export default Modal;
+export default AddPurchaseModal;

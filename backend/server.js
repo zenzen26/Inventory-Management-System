@@ -30,21 +30,20 @@ app.get('/api/auth-check', (req, res) => {
 });
 
 // INVENTORY OVERVIEW ROUTES
-// Inventory route to search for records
-app.get('/api/inventory', inventoryController.getInventoryRecords);
-
-// Route to update existing inventory item (increment total quantity)
-app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting);
-
-// Route to create a new inventory item
-app.post('/api/inventory', inventoryController.createInventoryRecord);
-
-// Route to delete an inventory item
-app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord);
+app.get('/api/inventory', inventoryController.getInventoryRecords); // Get table route
+app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting); // Increment total quantity (existing item ver) route
+app.post('/api/inventory', inventoryController.createInventoryRecord); // Create new item route
+app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord); // Delete an item route
 
 // INVENTORY DETAILS ROUTES
-// Inventory details route to search for records
-app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords);
+app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords); // Inventory details route to search for records
+// app.post('/api/add-inventory-detail', inventoryDetailsController.addInventoryDetail);
+app.post('/api/add-inventory-detail', (req, res) => {
+    console.log("Request body:", req.body);  // Log the request body
+
+    // Process the data here
+    inventoryDetailsController.addInventoryDetail(req, res);
+});
 
 
 // Starting the server

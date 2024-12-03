@@ -63,14 +63,25 @@ const addPurchasetoExisting = (req, res) => {
 
 // Function to create a new inventory item
 const createInventoryRecord = (req, res) => {
-    const {
+    let {
         itemNumber, itemName, category, quantity, length, width, height, weight, unitCost
     } = req.body;
 
+    // Replace null or undefined values with default values
+    itemNumber = itemNumber || 'N/A';
+    itemName = itemName || 'N/A';
+    category = category || 'N/A'; 
+    quantity = quantity || 0; 
+    length = length || 0; 
+    width = width || 0; 
+    height = height || 0;        
+    weight = weight || 0;
+    unitCost = unitCost || 0;
+
     // Insert a new inventory item into the database
     const query = `INSERT INTO inventories
-                   ("Item Number", "Item Name", "Category", "Total Quantity", "Length(cm)", "Width(cm)", "Height(cm)", "Weight(kg)", "Unit Cost(AUD)")
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                   ("Item Number", "Item Name", "Category", "Total Quantity", "In-Stock Quantity", "Length(cm)", "Width(cm)", "Height(cm)", "Weight(kg)", "Unit Cost(AUD)")
+                   VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`;
 
     db.run(query, [itemNumber, itemName, category, quantity, length, width, height, weight, unitCost], function (err) {
         if (err) {

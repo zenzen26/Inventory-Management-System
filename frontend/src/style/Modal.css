@@ -27,6 +27,7 @@
     opacity: 1;
 }
 
+/* MODAL HEADER */
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -50,6 +51,8 @@
     background: transparent;
 }
 
+/* SPECIAL: ONLY FOR ADD PURCHASE MODAL */
+
 .modal-tabs {
     display: flex;
     justify-content: center;
@@ -68,6 +71,8 @@
     color: white;
     font-weight: bold;
 }
+
+/* MODAL BODY */
 
 .modal-body {
     display: flex;
@@ -117,3 +122,106 @@ input {
 .modal-add-button:hover {
     background: rgb(189, 118, 60);
 }
+
+/* SPECIAL: FOR ADD IN STOCK ARRIVAL MODAL */
+/* Wrapper for the entire table */
+.table-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Header */
+/* Table container */
+.table-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Header Wrapper */
+.table-header-wrapper {
+    overflow: hidden; /* Prevent horizontal scroll for header */
+}
+
+/* Header */
+.table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 2fr auto;
+    padding: 10px;
+    background-color: #f5f5f5;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Body Wrapper */
+.table-body-wrapper {
+    max-height: 360px;
+    overflow-y: auto;
+    scrollbar-width: thin; /* Firefox scrollbar */
+}
+
+/* Body Rows */
+.table-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 2fr auto;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Synchronizing Header and Body Scroll */
+.table-body-wrapper::-webkit-scrollbar {
+    width: 10px;
+}
+
+.table-body-wrapper::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.table-body-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Sync header with body */
+.table-body-wrapper {
+    position: relative;
+}
+
+.table-header-wrapper::after {
+    content: "";
+    width: 10px; /* Match scrollbar width */
+    display: inline-block;
+    height: 1px;
+    background: transparent;
+}
+
+.add-row-link {
+cursor: pointer;
+color: #007bff;
+font-weight: bold;
+
+}
+
+.delete-icon {
+cursor: pointer;
+}
+.delete-icon img {
+width: 16px;
+height: 16px;
+}
+  
