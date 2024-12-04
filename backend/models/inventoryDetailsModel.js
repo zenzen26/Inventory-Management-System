@@ -13,42 +13,108 @@ const runQuery = (sql, params = []) => {
 // Function to validate inventory details before adding them
 const validateInventoryDetailsInput = async (data) => {
     const validationErrors = [];
-    const serialItemPairs = new Set(); // To store serial numbers and check for duplicates
-    const itemIncrements = {}; // Object to store item increments to update later
+    const serialItemPairs = new Set(); // To store serial-number/item-number pairs
+    const itemIncrements = {}; // Object to track item-number increments
 
+    // 1. Check for missing required fields
     for (const record of data) {
         const { serialNumber, itemNumber } = record;
 
-        // Check if required fields are provided
         if (!serialNumber || !itemNumber) {
-            validationErrors.push('Serial number and item number are required');
+            validationErrors.push('Serial number and item number are required.');
+            break; // Exit immediately on first error
         }
+    }
 
-        // Check for duplicate (serialNumber, itemNumber) within the input
+    if (validationErrors.length > 0) return validationErrors;
+
+    // 2. Check for duplicate (serialNumber, itemNumber) within the input
+    const duplicateItems = new Set();
+    for (const record of data) {
+        const { serialNumber, itemNumber } = record;
         const pairKey = `${serialNumber}-${itemNumber}`;
+
         if (serialItemPairs.has(pairKey)) {
-            validationErrors.push(`Duplicate entry: ${serialNumber} - ${itemNumber}`);
+            duplicateItems.add(itemNumber);
         } else {
             serialItemPairs.add(pairKey);
         }
+    }
 
-        // Ensure that the item number exists in the inventories table
+    if (duplicateItems.size > 0) {
+        validationErrors.push(
+            `Duplicate entries detected for item numbers: ${[...duplicateItems].join(', ')}`
+        );
+        return validationErrors;
+    }
+
+    // 3. Check if item numbers and supplier IDs exist in their respective tables
+    const missingItems = new Set();
+    const invalidSuppliers = new Set();
+
+    for (const record of data) {
+        const { itemNumber, supplierId } = record;
+
+        // Check if item number exists in the inventories table
         const existingItem = await runQuery(
-            'SELECT * FROM inventories WHERE "Item Number" = ?',
+            'SELECT * FROM inventories WHERE LOWER("Item Number") = LOWER(?)',
             [itemNumber]
         );
         if (existingItem.length === 0) {
-            validationErrors.push(`Item Number ${itemNumber} does not exist`);
+            missingItems.add(itemNumber);
         }
 
-        // Check if the serial number of item number already exists in the inventory details table
+        // Check if supplier ID exists in the suppliers table
+        if (supplierId) {
+            const existingSupplier = await runQuery(
+                'SELECT * FROM suppliers WHERE LOWER("Supplier ID") = LOWER(?)',
+                [supplierId]
+            );
+            if (existingSupplier.length === 0) {
+                invalidSuppliers.add(supplierId);
+            }
+        }
+    }
+
+    if (missingItems.size > 0) {
+        validationErrors.push(
+            `The following item numbers do not exist: ${[...missingItems].join(', ')}`
+        );
+    }
+
+    if (invalidSuppliers.size > 0) {
+        validationErrors.push(
+            `The following supplier IDs do not exist: ${[...invalidSuppliers].join(', ')}`
+        );
+    }
+
+    if (validationErrors.length > 0) return validationErrors;
+
+    // 4. Check for existing (serialNumber, itemNumber) in the `inventory details` table
+    const existingSerialItems = new Set();
+    for (const record of data) {
+        const { serialNumber, itemNumber } = record;
+
         const existingSerialItem = await runQuery(
-            'SELECT * FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?',
+            'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
             [serialNumber, itemNumber]
         );
+
         if (existingSerialItem.length > 0) {
-            validationErrors.push(`Serial Number ${serialNumber} for Item Number ${itemNumber} already exists`);
+            existingSerialItems.add(`${serialNumber} (${itemNumber})`);
         }
+    }
+
+    if (existingSerialItems.size > 0) {
+        validationErrors.push(
+            `The following serial numbers already exist: ${[...existingSerialItems].join(', ')}`
+        );
+        return validationErrors;
+    }
+
+    // 5. Check if adding new quantities will exceed the total quantity
+    for (const record of data) {
+        const { itemNumber } = record;
 
         // Track the increment for each item
         if (itemIncrements[itemNumber]) {
@@ -58,23 +124,36 @@ const validateInventoryDetailsInput = async (data) => {
         }
     }
 
-    // Ensure the new in-stock quantity does not exceed the total quantity for each item after all records are validated
+    const exceededItems = [];
     for (const itemNumber in itemIncrements) {
         const increment = itemIncrements[itemNumber];
 
         const inventory = await runQuery(
-            'SELECT "Total Quantity", "In-Stock Quantity" FROM inventories WHERE "Item Number" = ?',
+            'SELECT "Total Quantity", "In-Stock Quantity" FROM inventories WHERE LOWER("Item Number") = LOWER(?)',
             [itemNumber]
         );
-        const { "Total Quantity": totalQuantity, "In-Stock Quantity": inStockQuantity } = inventory[0];
 
-        if (inStockQuantity + increment > totalQuantity) {
-            validationErrors.push(`Item number ${itemNumber} will exceed the total quantity`);
+        if (inventory.length > 0) {
+            const {
+                "Total Quantity": totalQuantity,
+                "In-Stock Quantity": inStockQuantity,
+            } = inventory[0];
+
+            if (inStockQuantity + increment > totalQuantity) {
+                exceededItems.push(itemNumber);
+            }
         }
+    }
+
+    if (exceededItems.length > 0) {
+        validationErrors.push(
+            `The following item numbers will exceed the total quantity: ${exceededItems.join(', ')}`
+        );
     }
 
     return validationErrors;
 };
+
 
 // Function to create a new inventory detail record
 const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId, supplierInvoice, partNumber, remark) => {
@@ -95,10 +174,9 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
 // Function to delete an inventory detail record and update In-Stock Quantity
 const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
     try {
-        console.log('INSIDE TRY - DELETE FUNC INV DETAIL MODEL Deleting record with Serial Number:', serialNumber, 'Item Number:', itemNumber);
         // Check if the record exists in the inventory details table
         const existingRecord = await runQuery(
-            'SELECT * FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?',
+            'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = ?',
             [serialNumber, itemNumber]
         );
         if (existingRecord.length === 0) {
@@ -107,13 +185,13 @@ const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
 
         // Delete the record from the inventory details table
         await runQuery(
-            'DELETE FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?',
+            'DELETE FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
             [serialNumber, itemNumber]
         );
 
         // Decrement the In-Stock Quantity in the inventories table
         await runQuery(
-            'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE "Item Number" = ?',
+            'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE LOWER("Item Number") = LOWER(?)',
             [itemNumber]
         );
 
