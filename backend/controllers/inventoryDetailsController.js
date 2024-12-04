@@ -1,4 +1,4 @@
-const { createInventoryDetailRecord, validateInventoryDetailsInput, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
+const { createInventoryDetailRecord, validateInventoryDetailsInput, deleteInventoryDetailRecord, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
 
 const addInventoryDetail = async (req, res) => {
     const data = Array.isArray(req.body) ? req.body : [req.body]; // Ensure it's always treated as an array
@@ -24,8 +24,22 @@ const addInventoryDetail = async (req, res) => {
     }
 };
 
+const deleteInventoryDetail = async (req, res) => {
+    const { serialNumber, itemNumber } = req.body; // Expecting both serialNumber and itemNumber
+
+    try {
+        // Call a function to delete the record from the database
+        await deleteInventoryDetailRecord(serialNumber, itemNumber);
+
+        res.status(200).json({ success: true, message: 'Inventory record deleted successfully' });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+
 const inventoryDetailsController = (req, res) => {
     getInventoryDetailsRecords(req, res);
 };
 
-module.exports = { addInventoryDetail, getInventoryDetailsRecords: inventoryDetailsController };
+module.exports = { addInventoryDetail, deleteInventoryDetail, getInventoryDetailsRecords: inventoryDetailsController };

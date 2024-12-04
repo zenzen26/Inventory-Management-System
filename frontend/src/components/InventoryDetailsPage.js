@@ -57,6 +57,37 @@ const InventoryDetailsPage = () => {
         }
     };
 
+    // Function to delete an inventory record
+    const handleDeleteRecord = async (serialNumber, itemNumber) => {
+        try {
+            const response = await axios.delete('http://localhost:5000/api/inventory-details', {
+                data: { serialNumber, itemNumber },
+            });
+
+            if (response.data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'The record has been successfully deleted.',
+                });
+                fetchInventoryDetailsRecords();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.data.message,
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting inventory record:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Could not delete the inventory record.',
+            });
+        }
+    };
+
     // Define CSV headers for details page
     const csvHeaders = [
         { label: 'Serial Number', key: 'Serial Number' },
@@ -67,26 +98,6 @@ const InventoryDetailsPage = () => {
         { label: 'Remark', key: 'Remark' },
         { label: 'Sold Status', key: 'Sold Status' },
     ];
-
-    // Function to delete an inventory detail record
-    const deleteInventoryDetailsRecord = async (serialNumber) => {
-        try {
-            const response = await axios.delete(`http://localhost:5000/api/inventory/${serialNumber}`);
-            Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: response.data.message,
-            });
-            fetchInventoryDetailsRecords(); // Refresh the table after deletion
-        } catch (error) {
-            console.error('Error deleting inventory detail record:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to delete the inventory detail record.',
-            });
-        }
-    };
 
     useEffect(() => {
         checkAuth();
@@ -181,7 +192,7 @@ const InventoryDetailsPage = () => {
                                             className="action-button delete-button"
                                             onClick={() => {
                                                 Swal.fire({
-                                                    title: `Are you sure you want to delete Serial Number: ${record['Serial Number']}?`,
+                                                    title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
                                                     text: "This action cannot be undone.",
                                                     icon: 'warning',
                                                     showCancelButton: true,
@@ -190,7 +201,7 @@ const InventoryDetailsPage = () => {
                                                     confirmButtonText: 'Yes, delete it!',
                                                 }).then((result) => {
                                                     if (result.isConfirmed) {
-                                                        deleteInventoryDetailsRecord(record['Serial Number']);
+                                                        handleDeleteRecord(record['Serial Number'], record['Item Number']);
                                                     }
                                                 });
                                             }}
@@ -208,7 +219,6 @@ const InventoryDetailsPage = () => {
             {isModalOpen && <AddInStockModal onClose={() => setIsModalOpen(false)} fetchInventoryDetailsRecords={fetchInventoryDetailsRecords} />}
 
         </div>
-        
     );
 };
 

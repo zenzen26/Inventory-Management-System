@@ -92,6 +92,37 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
     }
 };
 
+// Function to delete an inventory detail record and update In-Stock Quantity
+const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
+    try {
+        console.log('INSIDE TRY - DELETE FUNC INV DETAIL MODEL Deleting record with Serial Number:', serialNumber, 'Item Number:', itemNumber);
+        // Check if the record exists in the inventory details table
+        const existingRecord = await runQuery(
+            'SELECT * FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?',
+            [serialNumber, itemNumber]
+        );
+        if (existingRecord.length === 0) {
+            throw new Error('Record not found');
+        }
+
+        // Delete the record from the inventory details table
+        await runQuery(
+            'DELETE FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?',
+            [serialNumber, itemNumber]
+        );
+
+        // Decrement the In-Stock Quantity in the inventories table
+        await runQuery(
+            'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE "Item Number" = ?',
+            [itemNumber]
+        );
+
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
 const getInventoryDetailsRecords = (req, res) => {
     const { serialNumber, itemNumber, supplierID, soldStatus } = req.query;
     let query = 'SELECT * FROM "inventory details"';
@@ -131,4 +162,4 @@ const getInventoryDetailsRecords = (req, res) => {
     });
 };
 
-module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, getInventoryDetailsRecords };
+module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, getInventoryDetailsRecords, deleteInventoryDetailRecord };

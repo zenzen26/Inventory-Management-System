@@ -38,11 +38,9 @@ app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryReco
 // INVENTORY DETAILS ROUTES
 app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords); // Inventory details route to search for records
 app.post('/api/add-inventory-detail', (req, res) => {
-    console.log("Request body:", req.body);  // Log the request body
-
-    // Process the data here
     inventoryDetailsController.addInventoryDetail(req, res);
 });
+app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventoryDetail);
 
 // Starting the server
 const PORT = 5000;
