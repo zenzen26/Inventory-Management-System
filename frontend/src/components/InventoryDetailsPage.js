@@ -6,7 +6,7 @@ import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
 import AddInStockModal from './modals/AddInStock'; 
 import '../style/Sidebar.css';
-import '../style/Inventory.css';
+import '../style/InventoryDetail.css';
 import EditIcon from '../icons/edit-icon.svg'; // Imported Edit Icon
 import DeleteIcon from '../icons/delete-icon.svg'; // Imported Delete Icon
 
@@ -164,56 +164,71 @@ const InventoryDetailsPage = () => {
 
                 {/* Inventory details table */}
                 <div className="inventory-table-container">
-                    <table className="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>Serial Number</th>
-                                <th>Item Number</th>
-                                <th>Supplier ID</th>
-                                <th>Supplier Invoice</th>
-                                <th>Part Number</th>
-                                <th>Remark</th>
-                                <th>Sold Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {inventoryDetailsRecords.map((record, index) => (
-                                <tr key={index}>
-                                    <td>{record['Serial Number']}</td>
-                                    <td>{record['Item Number']}</td>
-                                    <td>{record['Supplier ID']}</td>
-                                    <td>{record['Supplier Invoice']}</td>
-                                    <td>{record['Part Number']}</td>
-                                    <td>{record['Remark']}</td>
-                                    <td>{record['Sold Status']}</td>
-                                    <td>
-                                        <button
-                                            className="action-button delete-button"
-                                            onClick={() => {
-                                                Swal.fire({
-                                                    title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
-                                                    text: "This action cannot be undone.",
-                                                    icon: 'warning',
-                                                    showCancelButton: true,
-                                                    confirmButtonColor: '#d33',
-                                                    cancelButtonColor: '#3085d6',
-                                                    confirmButtonText: 'Yes, delete it!',
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        handleDeleteRecord(record['Serial Number'], record['Item Number']);
-                                                    }
-                                                });
-                                            }}
-                                        >
-                                            <img src={DeleteIcon} alt="Delete" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+  <table className="inventory-table">
+    <thead>
+      <tr>
+        <th>Serial Number</th>
+        <th>Item Number</th>
+        <th>Supplier ID</th>
+        <th>Supplier Invoice</th>
+        <th>Part Number</th>
+        <th>Remark</th>
+        <th>Sold Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {inventoryDetailsRecords.map((record, index) => (
+        <tr key={index}>
+          <td>
+            <div className="cell-content">{record['Serial Number']}</div>
+          </td>
+          <td>
+            <div className="cell-content">{record['Item Number']}</div>
+          </td>
+          <td>
+            <div className="cell-content">{record['Supplier ID']}</div>
+          </td>
+          <td>
+            <div className="cell-content">{record['Supplier Invoice']}</div>
+          </td>
+          <td>
+            <div className="cell-content">{record['Part Number']}</div>
+          </td>
+          <td style={{width:"350px", height:"20px"}}> 
+            <div className="cell-content">{record['Remark']}</div>
+          </td>
+          <td>
+            <div className="cell-content">{record['Sold Status']}</div>
+          </td>
+          <td className="cell-content">
+            <button
+              className="action-button delete-button"
+              onClick={() => {
+                Swal.fire({
+                  title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
+                  text: "This action cannot be undone.",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#d33',
+                  cancelButtonColor: '#3085d6',
+                  confirmButtonText: 'Yes, delete it!',
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    handleDeleteRecord(record['Serial Number'], record['Item Number']);
+                  }
+                });
+              }}
+            >
+              <img src={DeleteIcon} alt="Delete" />
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
             </div>
 
             {isModalOpen && <AddInStockModal onClose={() => setIsModalOpen(false)} fetchInventoryDetailsRecords={fetchInventoryDetailsRecords} />}
