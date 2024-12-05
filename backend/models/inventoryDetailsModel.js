@@ -160,7 +160,7 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
     try {
         await runQuery(
             'INSERT INTO "inventory details" ("Serial Number", "Item Number", "Supplier ID", "Supplier Invoice", "Part Number", "Remark", "Sold Status") VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [serialNumber, itemNumber, supplierId || 'N/A', supplierInvoice || 'N/A', partNumber || 'N/A', remark || 'N/A', 'no']
+            [serialNumber, itemNumber, supplierId || 'N/A', supplierInvoice || 'N/A', partNumber || 'N/A', remark || 'N/A', 'Not Sold']
         );
 
         // Update the in-stock quantity in the inventories table
@@ -174,13 +174,25 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
 // Function to delete an inventory detail record and update In-Stock Quantity
 const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
     try {
-        // Check if the record exists in the inventory details table
+        // Check if the record exists in the inventory details table and fetch the Sold Status
         const existingRecord = await runQuery(
-            'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = ?',
+            'SELECT "Sold Status" FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
             [serialNumber, itemNumber]
         );
         if (existingRecord.length === 0) {
             throw new Error('Record not found');
+        }
+
+        // Get the Sold Status of the record
+        const soldStatus = existingRecord[0]['Sold Status'];
+
+        // Only decrement In-Stock Quantity if the record has a "Not Sold" status
+        if (soldStatus === 'Not Sold') {
+            // Decrement the In-Stock Quantity in the inventories table
+            await runQuery(
+                'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE LOWER("Item Number") = LOWER(?)',
+                [itemNumber]
+            );
         }
 
         // Delete the record from the inventory details table
@@ -189,16 +201,63 @@ const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
             [serialNumber, itemNumber]
         );
 
-        // Decrement the In-Stock Quantity in the inventories table
-        await runQuery(
-            'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE LOWER("Item Number") = LOWER(?)',
-            [itemNumber]
-        );
-
     } catch (error) {
         throw new Error(error.message);
     }
 };
+
+
+// Update Sold Status
+const updateSoldStatus = async (serialNumber, itemNumber) => {
+    let oldStatus;
+    let updatedStatus;
+
+    try {
+        const currentStatusQuery = `SELECT "Sold Status" FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?`;
+        const result = await runQuery(currentStatusQuery, [serialNumber, itemNumber]);
+
+        if (result.length === 0) {
+            throw new Error('Record not found');
+        }
+
+        oldStatus = result[0]['Sold Status'];
+
+        if (!oldStatus) {
+            throw new Error('Invalid Sold Status retrieved from the database');
+        }
+
+        updatedStatus = oldStatus === 'Sold' ? 'Not Sold' : 'Sold';
+
+        const updateStatusQuery = `UPDATE "inventory details" SET "Sold Status" = ? WHERE "Serial Number" = ? AND "Item Number" = ?`;
+        await runQuery(updateStatusQuery, [updatedStatus, serialNumber, itemNumber]);
+
+        const updatedStatusQuery = `SELECT "Sold Status" FROM "inventory details" WHERE "Serial Number" = ? AND "Item Number" = ?`;
+        const updatedResult = await runQuery(updatedStatusQuery, [serialNumber, itemNumber]);
+        const finalStatus = updatedResult[0]['Sold Status'];
+
+        let totalQuantityChange = 0;
+        let inStockQuantityChange = 0;
+
+        if (finalStatus === 'Sold') {
+            totalQuantityChange = -1;
+            inStockQuantityChange = -1;
+        } else if (finalStatus === 'Not Sold') {
+            totalQuantityChange = 1;
+            inStockQuantityChange = 1;
+        }
+
+        const updateInventoryQuery = `UPDATE "inventories" SET "Total Quantity" = "Total Quantity" + ?, "In-Stock Quantity" = "In-Stock Quantity" + ? WHERE "Item Number" = ?`;
+        await runQuery(updateInventoryQuery, [totalQuantityChange, inStockQuantityChange, itemNumber]);
+
+        console.log('Update success', finalStatus);  // Log success
+
+        return { success: true, updatedRecord: { 'Serial Number': serialNumber, 'Item Number': itemNumber, 'Sold Status': finalStatus } };
+    } catch (error) {
+        console.error('Error updating Sold Status:', error.message);
+        return { success: false };
+    }
+};
+
 
 
 const getInventoryDetailsRecords = (req, res) => {
@@ -240,4 +299,4 @@ const getInventoryDetailsRecords = (req, res) => {
     });
 };
 
-module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, getInventoryDetailsRecords, deleteInventoryDetailRecord };
+module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, getInventoryDetailsRecords, deleteInventoryDetailRecord };

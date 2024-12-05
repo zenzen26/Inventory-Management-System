@@ -41,6 +41,7 @@ app.post('/api/add-inventory-detail', (req, res) => {
     inventoryDetailsController.addInventoryDetail(req, res);
 });
 app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventoryDetail);
+app.post('/api/inventory-details/handle-sold', inventoryDetailsController.handleSoldEffect); // Toggle sold status for an inventory item
 
 // Starting the server
 const PORT = 5000;

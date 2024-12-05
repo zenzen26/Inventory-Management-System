@@ -1,4 +1,5 @@
-const { createInventoryDetailRecord, validateInventoryDetailsInput, deleteInventoryDetailRecord, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
+// const axios = require('axios')
+const { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, updateInventoryQuantities, deleteInventoryDetailRecord, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
 
 const addInventoryDetail = async (req, res) => {
     const data = Array.isArray(req.body) ? req.body : [req.body]; // Ensure it's always treated as an array
@@ -37,9 +38,33 @@ const deleteInventoryDetail = async (req, res) => {
     }
 };
 
+// Function to handle toggling the Sold status
+const handleSoldEffect = async (req, res) => {
+    const { serialNumber, itemNumber } = req.body;
+
+    try {
+        const updateResult = await updateSoldStatus(serialNumber, itemNumber);
+
+        if (updateResult.success) {
+            return res.status(200).json({
+                success: true,
+                updatedRecord: updateResult.updatedRecord,
+            });
+        } else {
+            return res.status(200).json({
+                success: false,
+                message: `No change in Sold Status for ${itemNumber} - ${serialNumber}`,
+            });
+        }
+    } catch (error) {
+        console.error('Error handling sold effect:', error.message);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 
 const inventoryDetailsController = (req, res) => {
     getInventoryDetailsRecords(req, res);
 };
 
-module.exports = { addInventoryDetail, deleteInventoryDetail, getInventoryDetailsRecords: inventoryDetailsController };
+module.exports = { addInventoryDetail, deleteInventoryDetail, handleSoldEffect, getInventoryDetailsRecords: inventoryDetailsController };
