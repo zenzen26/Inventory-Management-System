@@ -154,7 +154,6 @@ const validateInventoryDetailsInput = async (data) => {
     return validationErrors;
 };
 
-
 // Function to create a new inventory detail record
 const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId, supplierInvoice, partNumber, remark) => {
     try {
@@ -170,6 +169,133 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
         throw new Error(error.message);
     }
 };
+
+// Function to edit an existing inventory detail record
+const updateInventoryDetailRecord = async (oldSerialNumber, oldItemNumber, newSerialNumber, newItemNumber, supplierId, supplierInvoice, partNumber, remark) => {
+    try {
+        console.log("Old Serial Number: ", oldSerialNumber, " --- New Serial Number: ", newSerialNumber);
+        console.log("Old Item Number: ", oldItemNumber, " --- New Item Number: ", newItemNumber);
+
+        // 1. Validate the new item number and serial number
+        if (!newItemNumber || !newSerialNumber) {
+            throw new Error('Item Number and Serial Number cannot be empty.');
+        }
+
+        const missingItems = await runQuery(
+            'SELECT * FROM inventories WHERE LOWER("Item Number") = LOWER(?)',
+            [newItemNumber]
+        );
+        if (missingItems.length === 0) {
+            throw new Error(`The item number ${newItemNumber} does not exist in the inventories table.`);
+        }
+
+        const invalidSupplier = await runQuery(
+            'SELECT * FROM suppliers WHERE LOWER("Supplier ID") = LOWER(?)',
+            [supplierId]
+        );
+        if (invalidSupplier.length === 0) {
+            throw new Error(`The supplier ID ${supplierId} does not exist in the suppliers table.`);
+        }
+
+        // 2. Validate that the new serial number doesn't exist with the new item number
+        if (oldSerialNumber !== newSerialNumber) {
+            const existingSerialItem = await runQuery(
+                'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
+                [newSerialNumber, newItemNumber]
+            );
+            if (existingSerialItem.length > 0) {
+                throw new Error(`The serial number ${newSerialNumber} already exists for item number ${newItemNumber}.`);
+            }
+        }
+
+        // 3. Check if the record exists in the inventory details table with the old serial number and item number
+        const existingRecord = await runQuery(
+            'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
+            [oldSerialNumber, oldItemNumber]
+        );
+        if (existingRecord.length === 0) {
+            throw new Error('Record not found.');
+        }
+
+        // 4. Prepare fields, replacing empty fields with 'N/A'
+        const finalSupplierId = supplierId || 'N/A';
+        const finalSupplierInvoice = supplierInvoice || 'N/A';
+        const finalPartNumber = partNumber || 'N/A';
+        const finalRemark = remark || 'N/A';
+
+        // Proceed only if the new and old item numbers are different
+        if (oldItemNumber.toLowerCase() !== newItemNumber.toLowerCase()) {
+            // 5. Get the old and new item details for the quantities
+            const oldItem = await runQuery(
+                'SELECT "In-Stock Quantity", "Total Quantity" FROM inventories WHERE LOWER("Item Number") = LOWER(?)',
+                [oldItemNumber]
+            );
+            const newItem = await runQuery(
+                'SELECT "In-Stock Quantity", "Total Quantity" FROM inventories WHERE LOWER("Item Number") = LOWER(?)',
+                [newItemNumber]
+            );
+        
+            if (oldItem.length > 0 && newItem.length > 0) {
+                const isSold = existingRecord[0]["Sold Status"] === "Sold";
+        
+                // Scenario 1: Changing item number when the item is NOT sold
+                if (!isSold) {
+                    // Check: Will the in-stock quantity of the new item exceed its total quantity after increment?
+                    if (newItem[0]["In-Stock Quantity"] + 1 > newItem[0]["Total Quantity"]) {
+                        throw new Error(
+                            `The in-stock quantity for item number ${newItemNumber} will exceed its total quantity after the update.`
+                        );
+                    }
+        
+                    // Update in-stock quantities for the old and new items
+                    await runQuery(
+                        'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" - 1 WHERE LOWER("Item Number") = LOWER(?)',
+                        [oldItemNumber]
+                    );
+                    await runQuery(
+                        'UPDATE inventories SET "In-Stock Quantity" = "In-Stock Quantity" + 1 WHERE LOWER("Item Number") = LOWER(?)',
+                        [newItemNumber]
+                    );
+                }
+        
+                // Scenario 2: Changing item number when the item IS sold
+                else {
+                    // Check: Will the total quantity of the new item number be less than its in-stock quantity after decrement?
+                    if (newItem[0]["Total Quantity"] - 1 < newItem[0]["In-Stock Quantity"]) {
+                        throw new Error(
+                            `The total quantity for item number ${newItemNumber} will be less than its in-stock quantity after the update.`
+                        );
+                    }
+        
+                    // Update total quantities for the old and new items
+                    await runQuery(
+                        'UPDATE inventories SET "Total Quantity" = "Total Quantity" + 1 WHERE LOWER("Item Number") = LOWER(?)',
+                        [oldItemNumber]
+                    );
+                    await runQuery(
+                        'UPDATE inventories SET "Total Quantity" = "Total Quantity" - 1 WHERE LOWER("Item Number") = LOWER(?)',
+                        [newItemNumber]
+                    );
+                }
+            }
+        }
+        
+
+        // 6. Update the inventory details table with the new values
+        await runQuery(
+            'UPDATE "inventory details" SET "Serial Number" = ?, "Item Number" = ?, "Supplier ID" = ?, "Supplier Invoice" = ?, "Part Number" = ?, "Remark" = ? WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
+            [newSerialNumber, newItemNumber, finalSupplierId, finalSupplierInvoice, finalPartNumber, finalRemark, oldSerialNumber, oldItemNumber]
+        );
+
+        return { success: true, message: 'Inventory record updated successfully.' };
+    } catch (error) {
+        console.error('Error editing inventory record:', error.message);
+
+        // Send the error message to SweetAlert on the frontend
+        return { success: false, message: error.message };
+    }
+};
+
 
 // Function to delete an inventory detail record and update In-Stock Quantity
 const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
@@ -205,7 +331,6 @@ const deleteInventoryDetailRecord = async (serialNumber, itemNumber) => {
         throw new Error(error.message);
     }
 };
-
 
 // Update Sold Status
 const updateSoldStatus = async (serialNumber, itemNumber) => {
@@ -297,4 +422,4 @@ const getInventoryDetailsRecords = (req, res) => {
     });
 };
 
-module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, getInventoryDetailsRecords, deleteInventoryDetailRecord };
+module.exports = { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, updateInventoryDetailRecord, getInventoryDetailsRecords, deleteInventoryDetailRecord };

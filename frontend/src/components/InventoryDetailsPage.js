@@ -4,7 +4,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import AddInStockModal from './modals/AddInStock'; 
+import AddInStockModal from './modals/AddInStock';
+import EditInventoryDetailsModal from './modals/EditInventoryDetails'; 
 import '../style/Sidebar.css';
 import '../style/InventoryDetail.css';
 import EditIcon from '../icons/edit-icon.svg'; // Imported Edit Icon
@@ -16,7 +17,9 @@ const InventoryDetailsPage = () => {
     const [supplierId, setSupplierId] = useState('');
     const [soldStatus, setSoldStatus] = useState('');
     const [inventoryDetailsRecords, setInventoryDetailsRecords] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [recordToEdit, setRecordToEdit] = useState(null);
     const [loggedIn, setLoggedIn] = useState(false);
     const navigate = useNavigate();
 
@@ -88,6 +91,18 @@ const InventoryDetailsPage = () => {
         }
     };
 
+    const handleEdit = (record) => {
+        setRecordToEdit(record);
+        setIsEditModalOpen(true);
+    };
+    
+    const handleSaveEdit = (updatedRecord) => {
+        // Update the record in the backend and refresh the table
+        console.log('Updated Record:', updatedRecord);
+        // Add backend logic here
+        fetchInventoryDetailsRecords();
+    };
+
     // Function to toggle the Sold Status and update quantities
     const handleSold = async (record) => {
         try {
@@ -115,10 +130,6 @@ const InventoryDetailsPage = () => {
             console.error('Error toggling Sold Status:', error.message);
         }
     };
-    
-    
-    
-    
 
     // Define CSV headers for details page
     const csvHeaders = [
@@ -180,7 +191,7 @@ const InventoryDetailsPage = () => {
                         onChange={(e) => setSoldStatus(e.target.value)}
                     />
                     <div className="button-container">
-                        <button className="add-button"  onClick={() => setIsModalOpen(true)}>
+                        <button className="add-button"  onClick={() => setIsAddModalOpen(true)}>
                             Add In-Stock Arrival
                         </button>
                         <CSVLink
@@ -242,26 +253,29 @@ const InventoryDetailsPage = () => {
                             </td>
 
                             <td className="cell-content">
-                                <button className="action-button edit-button">
-                                        <img src={EditIcon} alt="Edit" />
+                                <button 
+                                    className="action-button edit-button"
+                                    onClick={() => handleEdit(record)}
+                                >
+                                    <img src={EditIcon} alt="Edit" />
                                 </button>
                                 <button
-                                className="action-button delete-button"
-                                onClick={() => {
-                                    Swal.fire({
-                                    title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
-                                    text: "This action cannot be undone.",
-                                    icon: 'warning',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#d33',
-                                    cancelButtonColor: '#3085d6',
-                                    confirmButtonText: 'Yes, delete it!',
-                                    }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        handleDeleteRecord(record['Serial Number'], record['Item Number']);
-                                    }
-                                    });
-                                }}
+                                    className="action-button delete-button"
+                                    onClick={() => {
+                                        Swal.fire({
+                                        title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
+                                        text: "This action cannot be undone.",
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#d33',
+                                        cancelButtonColor: '#3085d6',
+                                        confirmButtonText: 'Yes, delete it!',
+                                        }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            handleDeleteRecord(record['Serial Number'], record['Item Number']);
+                                        }
+                                        });
+                                    }}
                                 >
                                 <img src={DeleteIcon} alt="Delete" />
                                 </button>
@@ -274,7 +288,13 @@ const InventoryDetailsPage = () => {
 
             </div>
 
-            {isModalOpen && <AddInStockModal onClose={() => setIsModalOpen(false)} fetchInventoryDetailsRecords={fetchInventoryDetailsRecords} />}
+            {isAddModalOpen && <AddInStockModal onClose={() => setIsAddModalOpen(false)} fetchInventoryDetailsRecords={fetchInventoryDetailsRecords} />}
+            {isEditModalOpen && <EditInventoryDetailsModal 
+                                    isOpen={isEditModalOpen}
+                                    onClose={() => setIsEditModalOpen(false)}
+                                    recordToEdit={recordToEdit}
+                                    onSave={handleSaveEdit}
+            />}
 
         </div>
     );

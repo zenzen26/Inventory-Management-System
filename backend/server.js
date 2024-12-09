@@ -30,17 +30,16 @@ app.get('/api/auth-check', (req, res) => {
 });
 
 // INVENTORY OVERVIEW ROUTES
-app.get('/api/inventory', inventoryController.getInventoryRecords); // Get table route
+app.get('/api/inventory', inventoryController.getInventoryRecords); // Get inventory route and the main page for this
 app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting); // Increment total quantity (existing item ver) route
 app.post('/api/inventory', inventoryController.createInventoryRecord); // Create new item route
 app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord); // Delete an item route
 
 // INVENTORY DETAILS ROUTES
-app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords); // Inventory details route to search for records
-app.post('/api/add-inventory-detail', (req, res) => {
-    inventoryDetailsController.addInventoryDetail(req, res);
-});
-app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventoryDetail);
+app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords); // Inventory details route to search for records and the main page for this
+app.post('/api/inventory-details/add', (req, res) => {inventoryDetailsController.addInventoryDetail(req, res);}); // Add in stock items
+app.put('/api/inventory-details/edit', inventoryDetailsController.editInventoryDetailRecord); // Increment total quantity (existing item ver) route
+app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventoryDetail); // Delete an in stock item
 app.post('/api/inventory-details/handle-sold', inventoryDetailsController.handleSoldEffect); // Toggle sold status for an inventory item
 
 // Starting the server

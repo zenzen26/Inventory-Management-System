@@ -1,5 +1,5 @@
 // const axios = require('axios')
-const { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, updateInventoryQuantities, deleteInventoryDetailRecord, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
+const { createInventoryDetailRecord, validateInventoryDetailsInput, updateSoldStatus, updateInventoryDetailRecord, deleteInventoryDetailRecord, getInventoryDetailsRecords } = require('../models/inventoryDetailsModel');
 
 const addInventoryDetail = async (req, res) => {
     const data = Array.isArray(req.body) ? req.body : [req.body]; // Ensure it's always treated as an array
@@ -62,9 +62,33 @@ const handleSoldEffect = async (req, res) => {
     }
 };
 
+const editInventoryDetailRecord = async (req, res) => {
+    const { oldSerialNumber, oldItemNumber, newSerialNumber, newItemNumber, supplierId, supplierInvoice, partNumber, remark } = req.body;
+
+    // Ensure both Item Number and Serial Number are provided
+    if (!newSerialNumber || !newItemNumber) {
+        return res.status(400).json({ success: false, message: 'Item Number and Serial Number cannot be empty.' });
+    }
+
+    try {
+        // Call the model function to update the record
+        const result = await updateInventoryDetailRecord(oldSerialNumber, oldItemNumber, newSerialNumber, newItemNumber, supplierId, supplierInvoice, partNumber, remark);
+
+        if (result.success) {
+            return res.status(200).json({ success: true, message: 'Inventory detail updated successfully.' });
+        } else {
+            return res.status(500).json({ success: false, message: 'Failed to update inventory detail.' });
+        }
+    } catch (error) {
+        console.error('Error updating inventory detail:', error.message);
+        return res.status(500).json({ success: false, message: 'Failed to update inventory detail.' });
+    }
+};
+
+
 
 const inventoryDetailsController = (req, res) => {
     getInventoryDetailsRecords(req, res);
 };
 
-module.exports = { addInventoryDetail, deleteInventoryDetail, handleSoldEffect, getInventoryDetailsRecords: inventoryDetailsController };
+module.exports = { addInventoryDetail, deleteInventoryDetail, handleSoldEffect, editInventoryDetailRecord, getInventoryDetailsRecords: inventoryDetailsController };
