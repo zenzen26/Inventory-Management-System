@@ -258,8 +258,6 @@ const updateSoldStatus = async (serialNumber, itemNumber) => {
     }
 };
 
-
-
 const getInventoryDetailsRecords = (req, res) => {
     const { serialNumber, itemNumber, supplierID, soldStatus } = req.query;
     let query = 'SELECT * FROM "inventory details"';
@@ -282,8 +280,8 @@ const getInventoryDetailsRecords = (req, res) => {
     }
 
     if (soldStatus) {
-        conditions.push('"Sold Status" LIKE ?');
-        params.push(`%${soldStatus}%`);
+        conditions.push('LOWER("Sold Status") = LOWER(?)');
+        params.push(soldStatus.toLowerCase());
     }
 
     if (conditions.length > 0) {

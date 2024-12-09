@@ -242,6 +242,9 @@ const InventoryDetailsPage = () => {
                             </td>
 
                             <td className="cell-content">
+                                <button className="action-button edit-button">
+                                        <img src={EditIcon} alt="Edit" />
+                                </button>
                                 <button
                                 className="action-button delete-button"
                                 onClick={() => {
