@@ -42,8 +42,9 @@ const LoginPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                    <button type="submit">Log In</button>
+                    <div className='login-footer'><button className="login-button" type="submit">LOG IN</button></div>
                 </form>
+                
                 {errorMessage && <div className="error-message">{errorMessage}</div>}
             </div>
         </div>
