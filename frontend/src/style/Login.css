@@ -70,7 +70,7 @@ input:focus {
     transition: background-color 0.3s ease;
 }
 
-button:hover {
+.login-button:hover {
     background-color: #e5801d; /* Darker shade of the orange color */
 }
 
