@@ -7,9 +7,9 @@ import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router
 import '../style/Sidebar.css';
 import '../style/Inventory.css';
+import EditInventoryModal from './modals/EditInventory'; 
 import EditIcon from '../icons/edit-icon.svg';
 import DeleteIcon from '../icons/delete-icon.svg';
-
 
 const InventoryPage = () => {
     const [itemNumber, setItemNumber] = useState('');
@@ -17,6 +17,8 @@ const InventoryPage = () => {
     const [category, setCategory] = useState('');
     const [inventoryRecords, setInventoryRecords] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [recordToEdit, setRecordToEdit] = useState(null);
     const [loggedIn, setLoggedIn] = useState(false); // State to track login status
     const navigate = useNavigate();
 
@@ -81,6 +83,17 @@ const InventoryPage = () => {
                 text: 'Failed to delete the inventory record.',
             });
         }
+    };
+
+    const handleEdit = (record) => {
+        setRecordToEdit(record);
+        setIsEditModalOpen(true);
+    };
+    
+    const handleSaveEdit = (updatedRecord) => {
+        // Update the record in the backend and refresh the table
+        console.log('Updated Record:', updatedRecord);
+        fetchInventoryRecords();
     };
 
     // Check authentication when the component mounts
@@ -175,8 +188,11 @@ const InventoryPage = () => {
                                     <td>{record['Weight(kg)']}</td>
                                     <td>{`$ ${record['Unit Cost(AUD)']}`}</td>
                                     <td>
-                                        <button className="action-button edit-button">
-                                        <img src={EditIcon} alt="Edit" />
+                                        <button 
+                                            className="action-button edit-button"
+                                            onClick={() => handleEdit(record)}
+                                        >
+                                            <img src={EditIcon} alt="Edit" />
                                         </button>
                                         <button
                                             className="action-button delete-button"
@@ -206,9 +222,15 @@ const InventoryPage = () => {
                 </div>
             </div>
 
-            {/* Add Purchase Modal */}
             {isModalOpen && <AddPurchaseModal onClose={() => setIsModalOpen(false)} fetchInventoryRecords={fetchInventoryRecords} />}
+            {isEditModalOpen && <EditInventoryModal 
+                                    isOpen={isEditModalOpen}
+                                    onClose={() => setIsEditModalOpen(false)}
+                                    recordToEdit={recordToEdit}
+                                    onSave={handleSaveEdit}
+            />}
         </div>
+
     );
 };
 

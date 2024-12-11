@@ -99,7 +99,6 @@ const InventoryDetailsPage = () => {
     const handleSaveEdit = (updatedRecord) => {
         // Update the record in the backend and refresh the table
         console.log('Updated Record:', updatedRecord);
-        // Add backend logic here
         fetchInventoryDetailsRecords();
     };
 
@@ -263,8 +262,8 @@ const InventoryDetailsPage = () => {
                                         className="action-button delete-button"
                                         onClick={() => {
                                             Swal.fire({
-                                            title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of Item Number: ${record['Item Number']}?`,
-                                            text: "This action cannot be undone.",
+                                            title: `Are you sure you want to delete Serial Number: ${record['Serial Number']} of ${record['Item Number']}?`,
+                                            text: "This action cannot be undone and may affect the quantity recorded.",
                                             icon: 'warning',
                                             showCancelButton: true,
                                             confirmButtonColor: '#d33',
