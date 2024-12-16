@@ -4,6 +4,7 @@ const cors = require('cors');
 const authController = require('./controllers/authController');  // For logins
 const inventoryController = require('./controllers/inventoryAllController'); // For inventories overview
 const inventoryDetailsController = require('./controllers/inventoryDetailsController'); // For inventories details
+const suppliersController = require('./controllers/suppliersController');
 
 const app = express();
 
@@ -44,6 +45,14 @@ app.post('/api/inventory-details/add', (req, res) => {inventoryDetailsController
 app.put('/api/inventory-details/edit', inventoryDetailsController.editInventoryDetailRecord); // Increment total quantity (existing item ver) route
 app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventoryDetail); // Delete an in stock item
 app.post('/api/inventory-details/handle-sold', inventoryDetailsController.handleSoldEffect); // Toggle sold status for an inventory item
+
+// WARRANTY ROUTES
+
+//SUPPLIERS ROUTES
+app.get('/api/suppliers', suppliersController.getSupplierRecords); // Get inventory route and the main page for this
+app.delete('/api/suppliers/:supplierID', suppliersController.deleteSupplierRecord); // Delete an item route
+app.post('/api/suppliers', suppliersController.createSupplierRecord); // Create new supplier route
+app.put('/api/suppliers/edit/:supplierID', suppliersController.editSupplierRecord); 
 
 // Starting the server
 const PORT = 5000;

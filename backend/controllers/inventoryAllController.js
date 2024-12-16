@@ -3,14 +3,11 @@ const { getInventoryRecords, addPurchasetoExisting, createInventoryRecord, delet
 
 // Controller to get inventory records
 const inventoryAllController = (req, res) => {
-    getInventoryRecords(req, res); // Call the getInventoryRecords function
+    getInventoryRecords(req, res); 
 };
 
 
 const editInventoryRecord = async (req, res) => {
-    console.log("Received request:", req.method, req.originalUrl);
-    console.log("Request body:", req.body);
-
     const { oldItemNumber, newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost } = req.body;
 
     if (!newItemNumber) {

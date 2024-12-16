@@ -124,16 +124,17 @@ const deleteInventoryRecord = (req, res) => {
 
 const updateInventoryRecord = async (oldItemNumber, newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost) => {
     console.log("Update inventory record function in model");
-    
-    // Check if the edited item number existed elsewhere (Only if the old and edited item number is different)
+
+    // Check if the edited item number is different from the old one
     if (oldItemNumber.toLowerCase() !== newItemNumber.toLowerCase()) {
         try {
+            // Check if the new item number already exists in inventory details
             const existingItemNumber = await runQuery(
-                'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
-                [newItemNumber, newItemNumber]
+                'SELECT * FROM "inventories" WHERE LOWER("Item Number") = LOWER(?)',
+                [newItemNumber]
             );
             if (existingItemNumber.length > 0) {
-                throw new Error(`The item number ${newItemNumber} already existed.`);
+                throw new Error(`The item number ${newItemNumber} already exists in inventory details.`);
             }
 
             // Update the item number in the inventory details table where it matches the old item number
@@ -141,21 +142,19 @@ const updateInventoryRecord = async (oldItemNumber, newItemNumber, itemName, tot
                 'UPDATE "inventory details" SET "Item Number" = ? WHERE LOWER("Item Number") = LOWER(?)',
                 [newItemNumber, oldItemNumber]
             );
-            
         } catch (error) {
-            console.error("Error checking existing item number:", error);
-            throw error;  // Re-throw error so it's handled in the controller
+            throw error;  // Re-throw error to be handled in the controller
         }
     }
 
-    // Check if the in-stock quantity will exceed the total quantity
+    // Check if the in-stock quantity exceeds the total quantity
     if (inStockQuantity > totalQuantity) {
-        throw new Error('Total quantity cannot be less than in stock quantity.');
+        throw new Error('In-stock quantity cannot exceed total quantity.');
     }
 
     try {
         // Update the inventory table with the new values
-        const updateResult = await runQuery(
+        await runQuery(
             'UPDATE "inventories" SET "Item Number" = ?, "Item Name" = ?, "Total Quantity" = ?, "In-Stock Quantity" = ?, "Category" = ?, "Length(cm)" = ?, "Width(cm)" = ?, "Height(cm)" = ?, "Weight(kg)" = ?, "Unit Cost(AUD)" = ? WHERE LOWER("Item Number") = LOWER(?)',
             [newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost, oldItemNumber]
         );
@@ -167,4 +166,5 @@ const updateInventoryRecord = async (oldItemNumber, newItemNumber, itemName, tot
         throw error; // Re-throw error to be caught in the controller
     }
 };
+
 module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord, deleteInventoryRecord, updateInventoryRecord };
