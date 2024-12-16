@@ -123,6 +123,7 @@ input {
     border: none;
     border-radius: 20px;
     cursor: pointer;
+    font-weight: bold;
 }
 .save-button:hover {
     background: rgb(189, 118, 60);

@@ -1,5 +1,14 @@
 const db = require('../db'); 
 
+const runQuery = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+};
+
 // Function to get inventory records
 const getInventoryRecords = (req, res) => {
     const { itemNumber, itemName, category } = req.query;
@@ -113,4 +122,49 @@ const deleteInventoryRecord = (req, res) => {
     });
 };
 
-module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord, deleteInventoryRecord };
+const updateInventoryRecord = async (oldItemNumber, newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost) => {
+    console.log("Update inventory record function in model");
+    
+    // Check if the edited item number existed elsewhere (Only if the old and edited item number is different)
+    if (oldItemNumber.toLowerCase() !== newItemNumber.toLowerCase()) {
+        try {
+            const existingItemNumber = await runQuery(
+                'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
+                [newItemNumber, newItemNumber]
+            );
+            if (existingItemNumber.length > 0) {
+                throw new Error(`The item number ${newItemNumber} already existed.`);
+            }
+
+            // Update the item number in the inventory details table where it matches the old item number
+            await runQuery(
+                'UPDATE "inventory details" SET "Item Number" = ? WHERE LOWER("Item Number") = LOWER(?)',
+                [newItemNumber, oldItemNumber]
+            );
+            
+        } catch (error) {
+            console.error("Error checking existing item number:", error);
+            throw error;  // Re-throw error so it's handled in the controller
+        }
+    }
+
+    // Check if the in-stock quantity will exceed the total quantity
+    if (inStockQuantity > totalQuantity) {
+        throw new Error('Total quantity cannot be less than in stock quantity.');
+    }
+
+    try {
+        // Update the inventory table with the new values
+        const updateResult = await runQuery(
+            'UPDATE "inventories" SET "Item Number" = ?, "Item Name" = ?, "Total Quantity" = ?, "In-Stock Quantity" = ?, "Category" = ?, "Length(cm)" = ?, "Width(cm)" = ?, "Height(cm)" = ?, "Weight(kg)" = ?, "Unit Cost(AUD)" = ? WHERE LOWER("Item Number") = LOWER(?)',
+            [newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost, oldItemNumber]
+        );
+
+        // Return a result object indicating success
+        return { success: true, message: 'Inventory updated successfully.' };
+    } catch (error) {
+        console.error("Error updating inventory record:", error);
+        throw error; // Re-throw error to be caught in the controller
+    }
+};
+module.exports = { getInventoryRecords, addPurchasetoExisting, createInventoryRecord, deleteInventoryRecord, updateInventoryRecord };

@@ -5,50 +5,64 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
-    const [formData, setFormData] = useState({
-        'Item Number': '',
-        'Item Name': '',
-        'Total Quantity': 0,
-        'In-Stock Quantity': 0,
-        'Category': '',
-        'Length(cm)': 0,
-        'Width(cm)': 0,
-        'Height(cm)': 0,
-        'Weight(kg)': 0,
-        'Unit Cost(AUD)': 0,
-    });
+    const [itemNumber, setItemNumber] = useState('');
+    const [itemName, setItemName] = useState('');
+    const [totalQuantity, setTotalQuantity] = useState(0);
+    const [inStockQuantity, setInStockQuantity] = useState(0);
+    const [category, setCategory] = useState('');
+    const [length, setLength] = useState(0);
+    const [width, setWidth] = useState(0);
+    const [height, setHeight] = useState(0);
+    const [weight, setWeight] = useState(0);
+    const [unitCost, setUnitCost] = useState(0);
 
     // Populate form data when recordToEdit changes
     useEffect(() => {
         if (recordToEdit) {
-            setFormData(recordToEdit);
+            setItemNumber(recordToEdit['Item Number'] || '');
+            setItemName(recordToEdit['Item Name'] || '');
+            setTotalQuantity(recordToEdit['Total Quantity'] || 0);
+            setInStockQuantity(recordToEdit['In-Stock Quantity'] || 0);
+            setCategory(recordToEdit['Category'] || '');
+            setLength(recordToEdit['Length(cm)'] || 0);
+            setWidth(recordToEdit['Width(cm)'] || 0);
+            setHeight(recordToEdit['Height(cm)'] || 0);
+            setWeight(recordToEdit['Weight(kg)'] || 0);
+            setUnitCost(recordToEdit['Unit Cost(AUD)'] || 0);
         }
     }, [recordToEdit]);
 
-    // Handle form field changes
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: name.includes('(cm)') || name.includes('(AUD)') || name === 'Weight(kg)'
-                ? parseFloat(value)
-                : name.includes('Quantity')
-                ? parseInt(value, 10)
-                : value,
-        }));
-    };
-
     // Handle save action
     const handleSave = async () => {
+        const updatedRecord = {
+            oldItemNumber: recordToEdit['Item Number'],
+            newItemNumber: itemNumber, // Ensure this matches `newItemNumber`
+            itemName: itemName,
+            totalQuantity: totalQuantity,
+            inStockQuantity: inStockQuantity,
+            category: category,
+            length: length,
+            width: width,
+            height: height,
+            weight: weight,
+            unitCost: unitCost,
+        };
+        
+    
+        console.log('Updated Record:', updatedRecord);
+    
         try {
-            const response = await axios.put(`http://localhost:5000/api/inventory/${formData['Item Number']}`, formData);
+            const response = await axios.put(`http://localhost:5000/api/inventory/edit/${updatedRecord.oldItemNumber}`, updatedRecord);
+
+
+            console.log('Response in try view:', response.data);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
                 text: response.data.message || 'Inventory updated successfully!',
             });
-            onSave(); // Refresh inventory records
-            onClose(); // Close modal
+            onSave();
+            onClose();
         } catch (error) {
             console.error('Error updating inventory:', error);
             Swal.fire({
@@ -58,6 +72,7 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
             });
         }
     };
+    
 
     if (!isOpen) return null;
 
@@ -72,50 +87,44 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                 </div>
                 <div className="modal-body">
                     <form>
-                        <label style={{color:"red"}}>Item Number (Caution)</label>
+                        <label style={{ color: "red" }}>Item Number (Caution)</label>
                         <input
                             type="text"
-                            name="Item Number"
-                            value={formData['Item Number']}
-                            onChange={handleInputChange}
+                            value={itemNumber}
+                            onChange={(e) => setItemNumber(e.target.value)}
                         />
 
                         <label>Item Name</label>
                         <input
                             type="text"
-                            name="Item Name"
-                            value={formData['Item Name']}
-                            onChange={handleInputChange}
+                            value={itemName}
+                            onChange={(e) => setItemName(e.target.value)}
                         />
 
                         <div className="dimensions-row">
                             <div>
-                                <label style={{color:"red"}}>Total Quantity (Caution)</label>
+                                <label style={{ color: "red" }}>Total Quantity (Caution)</label>
                                 <input
                                     type="number"
-                                    name="Total Quantity"
-                                    value={formData['Total Quantity']}
-                                    onChange={handleInputChange}
+                                    value={totalQuantity}
+                                    onChange={(e) => setTotalQuantity(parseInt(e.target.value, 10) || 0)}
                                 />
                             </div>
                             <div>
-                                <label style={{color:"red"}}>In-Stock Quantity (Caution)</label>
+                                <label style={{ color: "red" }}>In-Stock Quantity (Caution)</label>
                                 <input
                                     type="number"
-                                    name="In-Stock Quantity"
-                                    value={formData['In-Stock Quantity']}
-                                    onChange={handleInputChange}
+                                    value={inStockQuantity}
+                                    onChange={(e) => setInStockQuantity(parseInt(e.target.value, 10) || 0)}
                                 />
-                            </div>                      
+                            </div>
                         </div>
-
 
                         <label>Category</label>
                         <input
                             type="text"
-                            name="Category"
-                            value={formData['Category']}
-                            onChange={handleInputChange}
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
                         />
 
                         <div className="dimensions-row">
@@ -123,36 +132,32 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                                 <label>Length(cm)</label>
                                 <input
                                     type="number"
-                                    name="Length(cm)"
-                                    value={formData['Length(cm)']}
-                                    onChange={handleInputChange}
+                                    value={length}
+                                    onChange={(e) => setLength(parseFloat(e.target.value) || 0)}
                                 />
                             </div>
                             <div>
                                 <label>Width(cm)</label>
                                 <input
                                     type="number"
-                                    name="Width(cm)"
-                                    value={formData['Width(cm)']}
-                                    onChange={handleInputChange}
+                                    value={width}
+                                    onChange={(e) => setWidth(parseFloat(e.target.value) || 0)}
                                 />
                             </div>
                             <div>
                                 <label>Height(cm)</label>
                                 <input
                                     type="number"
-                                    name="Height(cm)"
-                                    value={formData['Height(cm)']}
-                                    onChange={handleInputChange}
+                                    value={height}
+                                    onChange={(e) => setHeight(parseFloat(e.target.value) || 0)}
                                 />
                             </div>
                             <div>
                                 <label>Weight(kg)</label>
                                 <input
                                     type="number"
-                                    name="Weight(kg)"
-                                    value={formData['Weight(kg)']}
-                                    onChange={handleInputChange}
+                                    value={weight}
+                                    onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
                                 />
                             </div>
                         </div>
@@ -160,9 +165,8 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                         <label>Unit Cost(AUD)</label>
                         <input
                             type="number"
-                            name="Unit Cost(AUD)"
-                            value={formData['Unit Cost(AUD)']}
-                            onChange={handleInputChange}
+                            value={unitCost}
+                            onChange={(e) => setUnitCost(parseFloat(e.target.value) || 0)}
                         />
                     </form>
                 </div>

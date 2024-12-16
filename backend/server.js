@@ -34,6 +34,9 @@ app.get('/api/inventory', inventoryController.getInventoryRecords); // Get inven
 app.put('/api/inventory/:itemNumber', inventoryController.addPurchasetoExisting); // Increment total quantity (existing item ver) route
 app.post('/api/inventory', inventoryController.createInventoryRecord); // Create new item route
 app.delete('/api/inventory/:itemNumber', inventoryController.deleteInventoryRecord); // Delete an item route
+app.put('/api/inventory/edit/:itemNumber', inventoryController.editInventoryRecord);
+
+
 
 // INVENTORY DETAILS ROUTES
 app.get('/api/inventory-details', inventoryDetailsController.getInventoryDetailsRecords); // Inventory details route to search for records and the main page for this

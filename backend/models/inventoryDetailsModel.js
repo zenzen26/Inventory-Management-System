@@ -173,9 +173,6 @@ const createInventoryDetailRecord = async (serialNumber, itemNumber, supplierId,
 // Function to edit an existing inventory detail record
 const updateInventoryDetailRecord = async (oldSerialNumber, oldItemNumber, newSerialNumber, newItemNumber, supplierId, supplierInvoice, partNumber, remark) => {
     try {
-        console.log("Old Serial Number: ", oldSerialNumber, " --- New Serial Number: ", newSerialNumber);
-        console.log("Old Item Number: ", oldItemNumber, " --- New Item Number: ", newItemNumber);
-
         // 1. Validate the new item number and serial number
         if (!newItemNumber || !newSerialNumber) {
             throw new Error('Item Number and Serial Number cannot be empty.');
@@ -198,7 +195,7 @@ const updateInventoryDetailRecord = async (oldSerialNumber, oldItemNumber, newSe
         }
 
         // 2. Validate that the new serial number doesn't exist with the new item number
-        if (oldSerialNumber !== newSerialNumber) {
+        if (oldSerialNumber.toLowerCase() !== newSerialNumber.toLowerCase()) {
             const existingSerialItem = await runQuery(
                 'SELECT * FROM "inventory details" WHERE LOWER("Serial Number") = LOWER(?) AND LOWER("Item Number") = LOWER(?)',
                 [newSerialNumber, newItemNumber]
