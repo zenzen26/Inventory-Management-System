@@ -15,8 +15,8 @@ function App() {
                 <Route path="/" element={<LoginPage />} />
                 <Route path="/inventories" element={<InventoryPage />} />
                 <Route path="/inventory_details" element={<InventoryDetailsPage />} />
-                <Route path="waranty" element={<WarrantyPage/>}/>
-                <Route path="suppliers" element={<SuppliersPage/>}/>
+                <Route path="/warranty" element={<WarrantyPage/>}/>
+                <Route path="/suppliers" element={<SuppliersPage/>}/>
             </Routes>
         </Router>
     );

@@ -4,6 +4,7 @@ const cors = require('cors');
 const authController = require('./controllers/authController');  // For logins
 const inventoryController = require('./controllers/inventoryAllController'); // For inventories overview
 const inventoryDetailsController = require('./controllers/inventoryDetailsController'); // For inventories details
+const warrantyController = require('./controllers/warrantyController');
 const suppliersController = require('./controllers/suppliersController');
 
 const app = express();
@@ -47,6 +48,9 @@ app.delete('/api/inventory-details/', inventoryDetailsController.deleteInventory
 app.post('/api/inventory-details/handle-sold', inventoryDetailsController.handleSoldEffect); // Toggle sold status for an inventory item
 
 // WARRANTY ROUTES
+app.get('/api/warranty', warrantyController.getWarrantyRecords); // Get warranty route and the main page for this
+app.post('/api/warranty', warrantyController.createWarrantyRecord);
+app.delete('/api/warranty/:invoice', warrantyController.deleteWarrantyRecord); 
 
 //SUPPLIERS ROUTES
 app.get('/api/suppliers', suppliersController.getSupplierRecords); // Get inventory route and the main page for this
