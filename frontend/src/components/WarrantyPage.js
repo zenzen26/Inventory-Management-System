@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import Sidebar from './Sidebar';
 import axios from 'axios';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom'; 
 import '../style/Sidebar.css';
 import '../style/Warranty.css';
-import AddEditWarrantyModal from './modals/AddEditWarranty';  
-import DownloadIcon from '../icons/download-icon.svg';
+import AddWarrantyModal from './modals/AddWarranty';
+import EditWarrantyModal from './modals/EditWarranty';    
 import EditIcon from '../icons/edit-icon.svg';
 import DeleteIcon from '../icons/delete-icon.svg';
 
@@ -19,6 +20,8 @@ const WarrantyPage = () => {
     const [warrantyRecords, setWarrantyRecords] = useState([]);
     const [loggedIn, setLoggedIn] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [recordToEdit, setRecordToEdit] = useState(null);
     const navigate = useNavigate();
 
     const checkAuth = async () => {
@@ -44,44 +47,41 @@ const WarrantyPage = () => {
                     customerName: searchFilter.customerName.trim(),
                 },
             });
-            setWarrantyRecords(groupRecords(response.data));
+            setWarrantyRecords(response.data); // No need to group records anymore
         } catch (error) {
             console.error('Error fetching warranty records:', error);
         }
     };
 
-    // Group records by Customer Name, Invoice, Invoice Date, and Customer Number
-    const groupRecords = (records) => {
-        const grouped = [];
-        const seenKeys = new Set();
-
-        records.forEach((record) => {
-            const key = `${record['Customer Number']}-${record['Invoice']}-${record['Invoice Date']}-${record['Customer Name']}`;
-            if (!seenKeys.has(key)) {
-                grouped.push({ ...record, _merged: true });
-                seenKeys.add(key);
-            } else {
-                grouped.push({ ...record, _merged: false });
+    const handleDelete = async (invoice, serialNumber) => {
+            try {
+                const response = await axios.delete(`http://localhost:5000/api/warranty/${invoice}/${serialNumber}`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: response.data.message,
+                });
+                fetchWarrantyRecords(); // Refresh the table after deletion
+            } catch (error) {
+                console.error('Error deleting supplier record:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to delete the supplier record.',
+                });
             }
-        });
+        };
 
-        return grouped;
+    const handleEdit = (record) => {
+        setRecordToEdit(record);
+        setIsEditModalOpen(true);
+    };
+    const handleSaveEdit = (updatedRecord) => {
+        // Update the record in the backend and refresh the table
+        console.log('Updated Record:', updatedRecord);
+        fetchWarrantyRecords();
     };
 
-    const handleDelete = async (invoice) => {
-        try {
-            // Send a DELETE request to your API with the invoice
-            await axios.delete(`http://localhost:5000/api/warranty/${invoice}`);
-            
-            // Remove the deleted record from the state to update the UI
-            setWarrantyRecords((prevRecords) => prevRecords.filter(record => record['Invoice'] !== invoice));
-            
-            alert('Warranty record deleted successfully.');
-        } catch (error) {
-            console.error('Error deleting warranty record:', error);
-            alert('Failed to delete warranty record.');
-        }
-    };
 
     useEffect(() => {
         checkAuth();
@@ -138,10 +138,15 @@ const WarrantyPage = () => {
                         value={searchFilter.customerName}
                         onChange={(e) => setSearchFilter({ ...searchFilter, customerName: e.target.value })}
                     />
-                    
                     <div className="button-container">
-                        <button className="add-button" onClick={() => setIsModalOpen(true)}>
+                        <button className="add-button" onClick={() => {
+                            setIsModalOpen(true);
+                        }}>
                             Add Warranty
+                        </button>
+
+                        <button className="add-button">
+                            Generate Warranty Card
                         </button>
                         <CSVLink
                             data={warrantyRecords}
@@ -166,10 +171,10 @@ const WarrantyPage = () => {
                         <tbody>
                             {warrantyRecords.map((record, index) => (
                                 <tr key={index}>
-                                    <td><div className="cell-content">{record._merged ? record['Customer Number'] : ''}</div></td>
-                                    <td><div className="cell-content">{record._merged ? record['Invoice Date'] : ''}</div></td>
-                                    <td><div className="cell-content">{record._merged ? record['Invoice'] : ''}</div></td>
-                                    <td style={{width:"170px", height:"50px"}}><div className="cell-content">{record._merged ? record['Customer Name'] : ''}</div></td>
+                                    <td><div className="cell-content">{record['Customer Number']}</div></td>
+                                    <td><div className="cell-content">{record['Invoice Date']}</div></td>
+                                    <td><div className="cell-content">{record['Invoice']}</div></td>
+                                    <td style={{width:"170px", height:"50px"}}><div className="cell-content">{record['Customer Name']}</div></td>
                                     <td style={{width:"170px", height:"50px"}}><div className="cell-content">{record['Items']}</div></td>
                                     <td style={{width:"250px", height:"50px"}}><div className="cell-content">{record['Serial Number']}</div></td>
                                     <td><div className="cell-content">{record['Template']}</div></td>
@@ -179,9 +184,10 @@ const WarrantyPage = () => {
                                     <td style={{width:"100px", height:"50px"}}><div className="cell-content">{record['Upload to Xero']}</div></td>
                                     <td style={{width:"100px", height:"50px"}}><div className="cell-content">{record['Email Customer']}</div></td>
                                     <td style={{width:"50px", height:"50px"}}>
-                                        <button className="action-button"><img src={DownloadIcon} alt="Download" /></button>
-                                        <button className="action-button"><img src={EditIcon} alt="Edit" /></button>
-                                        <button className="action-button" onClick={() => handleDelete(record['Invoice'])}>
+                                        <button className="action-button" onClick={() => handleEdit(record)}>
+                                            <img src={EditIcon} alt="Edit" />
+                                        </button>
+                                        <button className="action-button" onClick={() => handleDelete(record['Invoice'], record['Serial Number'])}>
                                             <img src={DeleteIcon} alt="Delete" />
                                         </button>
                                     </td>
@@ -191,14 +197,15 @@ const WarrantyPage = () => {
                     </table>
                 </div>
             </div>
-            {isModalOpen && (
-                <AddEditWarrantyModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    fetchWarrantyRecords={fetchWarrantyRecords}
-                    isEdit={false} // Set to true for edit mode
-                />
-            )}
+            {isModalOpen && <AddWarrantyModal onClose={() => setIsModalOpen(false)} fetchWarrantyRecords={fetchWarrantyRecords} />}
+
+            {isEditModalOpen && <EditWarrantyModal 
+                                    isOpen={isEditModalOpen}
+                                    onClose={() => setIsEditModalOpen(false)}
+                                    recordToEdit={recordToEdit}
+                                    onSave={handleSaveEdit}
+            />}
+
         </div>
     );
 };

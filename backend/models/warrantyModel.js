@@ -45,10 +45,10 @@ const getWarrantyRecords = (req, res) => {
 };
 
 const deleteWarrantyRecord = (req, res) => {
-    const { invoice } = req.params;
-    const query = 'DELETE FROM warranty WHERE "Invoice" = ?';
+    const { invoice, serialNumber } = req.params;
+    const query = 'DELETE FROM warranty WHERE "Invoice" = ? AND "Serial Number" = ?';
 
-    db.run(query, [invoice], function (err) {
+    db.run(query, [invoice, serialNumber], function (err) {
         if (err) {
             console.error('Database error:', err.message);
             return res.status(500).json({ message: 'Internal server error.' });
@@ -168,5 +168,57 @@ const createWarrantyRecord = (req, res) => {
     });
 };
 
+// Function to update a warranty record
+const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoice, customerName, items, oldSerialNumber, newSerialNumber, template, years, start, end) => {
+    return new Promise((resolve, reject) => {
+        console.log("in warranty model update function");
 
-module.exports = { getWarrantyRecords, createWarrantyRecord, deleteWarrantyRecord };
+        // Prepare the update query
+        const query = `
+            UPDATE warranty
+            SET
+                "Customer Number" = ?,
+                "Invoice Date" = ?,
+                "Invoice" = ?,
+                "Items" = ?,
+                "Serial Number" = ?,
+                "Template" = ?,
+                "Years" = ?,
+                "Start" = ?,
+                "End" = ?,
+                "Customer Name" = ?
+            WHERE "Invoice" = ? AND "Serial Number" = ?
+        `;
+
+        const values = [
+            customerNumber,
+            invoiceDate,
+            newInvoice,
+            items,
+            newSerialNumber,
+            template,
+            years,
+            start,  // Start date is now just text
+            end,    // End date is now just text
+            customerName,
+            oldInvoice,
+            oldSerialNumber,
+        ];
+
+        db.run(query, values, function (err) {
+            if (err) {
+                console.error("Database error:", err.message);
+                reject({ success: false, message: "Internal server error." });
+            }
+
+            // Check if no rows were affected
+            if (this.changes === 0) {
+                resolve({ success: false, message: "Warranty record not found." });
+            }
+
+            resolve({ success: true, message: "Warranty record updated successfully." });
+        });
+    });
+};
+
+module.exports = { getWarrantyRecords, createWarrantyRecord, deleteWarrantyRecord, updateWarrantyRecord };

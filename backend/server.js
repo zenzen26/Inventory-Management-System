@@ -50,7 +50,8 @@ app.post('/api/inventory-details/handle-sold', inventoryDetailsController.handle
 // WARRANTY ROUTES
 app.get('/api/warranty', warrantyController.getWarrantyRecords); // Get warranty route and the main page for this
 app.post('/api/warranty', warrantyController.createWarrantyRecord);
-app.delete('/api/warranty/:invoice', warrantyController.deleteWarrantyRecord); 
+app.delete('/api/warranty/:invoice/:serialNumber', warrantyController.deleteWarrantyRecord); 
+app.put('/api/warranty/edit', warrantyController.editWarrantyRecord); // Increment total quantity (existing item ver) route
 
 //SUPPLIERS ROUTES
 app.get('/api/suppliers', suppliersController.getSupplierRecords); // Get inventory route and the main page for this
