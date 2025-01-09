@@ -40,7 +40,6 @@ const EditWarrantyModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
             console.log("Retrieved Years:", recordToEdit['Years'], "   Mapped years: ", mappedYears);
             setYears(mappedYears);
 
-
             setStart(recordToEdit['Start'] || '');
             setEnd(recordToEdit['End'] || '');
         }

@@ -52,6 +52,9 @@ app.get('/api/warranty', warrantyController.getWarrantyRecords); // Get warranty
 app.post('/api/warranty', warrantyController.createWarrantyRecord);
 app.delete('/api/warranty/:invoice/:serialNumber', warrantyController.deleteWarrantyRecord); 
 app.put('/api/warranty/edit', warrantyController.editWarrantyRecord); // Increment total quantity (existing item ver) route
+app.post('/api/warranty/generate-pdf', warrantyController.generateWarrantyPDF);
+app.put('/api/warranty/xero-status', warrantyController.toggleXeroStatus);
+app.put('/api/warranty/email-status', warrantyController.toggleEmailStatus);
 
 //SUPPLIERS ROUTES
 app.get('/api/suppliers', suppliersController.getSupplierRecords); // Get inventory route and the main page for this

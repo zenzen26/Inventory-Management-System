@@ -1,4 +1,7 @@
 const db = require('../db'); 
+const fs = require('fs');
+const path = require('path');
+const PDFDocument = require('pdfkit');
 
 const runQuery = (sql, params = []) => {
     return new Promise((resolve, reject) => {
@@ -220,5 +223,98 @@ const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoic
         });
     });
 };
+const generateWarranty = (invoiceNumber) => {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM warranty WHERE invoice = ?';
+        db.all(query, [invoiceNumber], (err, rows) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
+};
 
-module.exports = { getWarrantyRecords, createWarrantyRecord, deleteWarrantyRecord, updateWarrantyRecord };
+// Handle the "Upload to Xero" status toggle
+const toggleXeroStatus = (req, res) => {
+    const { invoice, serialNumber } = req.body;
+
+    if (!invoice || !serialNumber) {
+        return res.status(400).json({ message: "Invoice and serial number are required." });
+    }
+
+    // Get the current value of the "Upload to Xero" field
+    const query = `SELECT "Upload to Xero" FROM warranty WHERE "Invoice" = ? AND "Serial Number" = ?`;
+    db.get(query, [invoice, serialNumber], (err, row) => {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ message: 'Internal server error.' });
+        }
+
+        if (!row) {
+            return res.status(404).json({ message: 'Warranty record not found.' });
+        }
+
+        // Toggle the "Upload to Xero" status between 'no' and 'yes'
+        const newStatus = row['Upload to Xero'] === "no" ? "yes" : "no";
+
+        // Update the "Upload to Xero" field with the new status
+        const updateQuery = `UPDATE warranty SET "Upload to Xero" = ? WHERE "Invoice" = ? AND "Serial Number" = ?`;
+        db.run(updateQuery, [newStatus, invoice, serialNumber], function (err) {
+            if (err) {
+                console.error('Database error:', err.message);
+                return res.status(500).json({ message: 'Internal server error.' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ message: 'Warranty record not found.' });
+            }
+
+            res.json({ message: `"Upload to Xero" status updated to ${newStatus}.` });
+        });
+    });
+};
+
+// Handle the "Email Customer" status toggle
+const toggleEmailStatus = (req, res) => {
+    const { invoice, serialNumber } = req.body;
+
+    if (!invoice || !serialNumber) {
+        return res.status(400).json({ message: "Invoice and serial number are required." });
+    }
+
+    // Get the current value of the "Email Customer" field
+    const query = `SELECT "Email Customer" FROM warranty WHERE "Invoice" = ? AND "Serial Number" = ?`;
+    db.get(query, [invoice, serialNumber], (err, row) => {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ message: 'Internal server error.' });
+        }
+
+        if (!row) {
+            return res.status(404).json({ message: 'Warranty record not found.' });
+        }
+
+        // Toggle the "Email Customer" status between 'no' and 'yes'
+        const newStatus = row['Email Customer'] === "no" ? "yes" : "no";
+
+        // Update the "Email Customer" field with the new status
+        const updateQuery = `UPDATE warranty SET "Email Customer" = ? WHERE "Invoice" = ? AND "Serial Number" = ?`;
+        db.run(updateQuery, [newStatus, invoice, serialNumber], function (err) {
+            if (err) {
+                console.error('Database error:', err.message);
+                return res.status(500).json({ message: 'Internal server error.' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ message: 'Warranty record not found.' });
+            }
+
+            res.json({ message: `"Email Customer" status updated to ${newStatus}.` });
+        });
+    });
+};
+
+
+
+module.exports = { getWarrantyRecords, createWarrantyRecord, deleteWarrantyRecord, updateWarrantyRecord, generateWarranty, toggleEmailStatus, toggleXeroStatus };

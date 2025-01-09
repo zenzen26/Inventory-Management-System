@@ -32,20 +32,18 @@ const GenerateWarrantyModal = ({ isOpen, onClose }) => {
 
     // Handle Generate PDF Click
     const handleGeneratePDF = async () => {
-        if (records.length === 0) {
-            alert('No records to generate PDF.');
-            return;
-        }
-
         try {
-            const response = await axios.post('http://localhost:5000/warranty/generate-pdf', { invoice });
-            alert('PDF generated successfully!');
-            console.log('Generated files:', response.data.files); // Optionally log the files
+            const response = await axios.post('http://localhost:5000/api/warranty/generate-pdf', {
+                invoiceNumber: invoice, // Use correct key
+            });
+    
+            console.log(response.data.file); // Log the generated file path
         } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF.');
+            console.error('Error generating warranty:', error.message);
+            console.error('Response:', error.response?.data); // Log detailed error from backend
         }
     };
+    
 
     if (!isOpen) return null;
 

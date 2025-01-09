@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import '../style/Sidebar.css';
 import '../style/Warranty.css';
 import AddWarrantyModal from './modals/AddWarranty';
-import EditWarrantyModal from './modals/EditWarranty';    
+import EditWarrantyModal from './modals/EditWarranty';  
+import GenerateWarrantyModal from './modals/GenerateWarranty';  
 import EditIcon from '../icons/edit-icon.svg';
 import DeleteIcon from '../icons/delete-icon.svg';
 
@@ -21,6 +22,7 @@ const WarrantyPage = () => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const[isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
     const [recordToEdit, setRecordToEdit] = useState(null);
     const navigate = useNavigate();
 
@@ -82,6 +84,30 @@ const WarrantyPage = () => {
         fetchWarrantyRecords();
     };
 
+    const handleToggleEmailStatus = async (invoice, serialNumber) => {
+        try {
+            const response = await axios.put('http://localhost:5000/api/warranty/email-status', {
+                invoice,
+                serialNumber,
+            });
+            fetchWarrantyRecords();
+        } catch (error) {
+            console.error('Error updating Email Customer status:', error);
+        }
+    };
+
+    const handleToggleXeroStatus = async (invoice, serialNumber) => {
+        try {
+            const response = await axios.put('http://localhost:5000/api/warranty/xero-status', {
+                invoice,
+                serialNumber,
+            });
+            fetchWarrantyRecords();
+        } catch (error) {
+            console.error('Error updating Xero status:', error);
+        }
+    };
+    
 
     useEffect(() => {
         checkAuth();
@@ -139,13 +165,11 @@ const WarrantyPage = () => {
                         onChange={(e) => setSearchFilter({ ...searchFilter, customerName: e.target.value })}
                     />
                     <div className="button-container">
-                        <button className="add-button" onClick={() => {
-                            setIsModalOpen(true);
-                        }}>
+                        <button className="add-button" onClick={() => { setIsModalOpen(true); }}>
                             Add Warranty
                         </button>
 
-                        <button className="add-button">
+                        <button className="add-button" onClick={() => { setIsGenerateModalOpen(true); }}>
                             Generate Warranty Card
                         </button>
                         <CSVLink
@@ -181,8 +205,27 @@ const WarrantyPage = () => {
                                     <td><div className="cell-content">{record['Years']}</div></td>
                                     <td><div className="cell-content">{record['Start']}</div></td>
                                     <td><div className="cell-content">{record['End']}</div></td>
-                                    <td style={{width:"100px", height:"50px"}}><div className="cell-content">{record['Upload to Xero']}</div></td>
-                                    <td style={{width:"100px", height:"50px"}}><div className="cell-content">{record['Email Customer']}</div></td>
+                                    <td style={{width:"100px", height:"50px"}}>
+                                    <div className="cell-content">
+                                        <button 
+                                            onClick={() => handleToggleXeroStatus(record['Invoice'], record['Serial Number'], 'Upload to Xero')} 
+                                            className={`toggle-status-button ${record['Upload to Xero'] === 'yes' ? 'yes' : 'no'}`}
+                                        >
+                                            {record['Upload to Xero']}
+                                        </button>
+                                    </div>
+                                    </td>
+                                    <td style={{width: "100px", height: "50px"}}>
+                                        <div className="cell-content">
+                                            <button 
+                                                onClick={() => handleToggleEmailStatus(record['Invoice'], record['Serial Number'], 'Email Customer')} 
+                                                className={`toggle-status-button ${record['Email Customer'] === 'yes' ? 'yes' : 'no'}`}
+                                            >
+                                                {record['Email Customer']}
+                                            </button>
+                                        </div>
+                                    </td>
+
                                     <td style={{width:"50px", height:"50px"}}>
                                         <button className="action-button" onClick={() => handleEdit(record)}>
                                             <img src={EditIcon} alt="Edit" />
@@ -205,6 +248,14 @@ const WarrantyPage = () => {
                                     recordToEdit={recordToEdit}
                                     onSave={handleSaveEdit}
             />}
+
+            {isGenerateModalOpen && (
+                <GenerateWarrantyModal 
+                    isOpen={isGenerateModalOpen} 
+                    onClose={() => setIsGenerateModalOpen(false)} 
+                />
+            )}
+
 
         </div>
     );
