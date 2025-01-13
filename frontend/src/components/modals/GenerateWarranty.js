@@ -33,16 +33,24 @@ const GenerateWarrantyModal = ({ isOpen, onClose }) => {
     // Handle Generate PDF Click
     const handleGeneratePDF = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/warranty/generate-pdf', {
-                invoiceNumber: invoice, // Use correct key
-            });
+            const response = await axios.post('http://localhost:5000/api/warranty/generate-pdf', 
+                { invoiceNumber: invoice }, 
+                { responseType: 'blob' } // Important to handle binary data
+            );
     
-            console.log(response.data.file); // Log the generated file path
+            // Create a blob URL and trigger download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Warranty_${invoice}.docx`); // Set the downloaded file name
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         } catch (error) {
-            console.error('Error generating warranty:', error.message);
-            console.error('Response:', error.response?.data); // Log detailed error from backend
+            console.error('Error generating warranty:', error.response?.data || error.message);
         }
     };
+    
     
 
     if (!isOpen) return null;

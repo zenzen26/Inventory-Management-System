@@ -220,9 +220,9 @@ const AddWarrantyModal = ({onClose, fetchWarrantyRecords }) => {
                                 </div>
                             </div>
                         </div>
-                        <button type="button" className="add-row-button" onClick={handleAddRow}>
+                        <div className="add-row-link" onClick={handleAddRow} style={{ textAlign: 'left', padding: '10px' }}>
                             + Add row
-                        </button>
+                        </div>
                     </form>
                 </div>
                 <div className="modal-footer">

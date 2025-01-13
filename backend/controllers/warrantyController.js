@@ -2,9 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
-const docxToPdf = require('docx-pdf');  // Install this library for DOCX to PDF conversion
-const puppeteer = require('puppeteer');
-const mammoth = require('mammoth');
 
 const { getWarrantyRecords, createWarrantyRecord, deleteWarrantyRecord, updateWarrantyRecord, generateWarranty, toggleEmailStatus, toggleXeroStatus } = require('../models/warrantyModel');
 
@@ -37,71 +34,68 @@ const editWarrantyRecord = async (req, res) => {
 };
 
 const generateWarrantyPDF = async (req, res) => {
+    console.log("In warranty controller: generateWarrantyPDF");
     const { invoiceNumber } = req.body;
+
     if (!invoiceNumber) {
         return res.status(400).json({ success: false, message: 'Invoice number is required' });
     }
 
     try {
-        // Fetch warranty records for the given invoice
+        // Fetch records associated with the invoice
         const warrantyRecords = await generateWarranty(invoiceNumber);
-        if (warrantyRecords.length === 0) {
-            return res.status(404).json({ success: false, message: 'No warranty records found for the given invoice.' });
+        if (!warrantyRecords || warrantyRecords.length === 0) {
+            return res.status(404).json({ success: false, message: 'No warranty records found for this invoice.' });
         }
+        console.log("After fetching records");
 
-        // Prepare the product list as a plain text string
-        const productList = warrantyRecords
-            .map((record, index) => `${String.fromCharCode(97 + index)}) ${record.item}, serial number: ${record.serialNumber}`)
-            .join('\n');
+        // Determine the template
+        const templateName = 'LCD warranty template.docx';
+        const templatePath = path.join(__dirname, '../resources', templateName);
 
-        // Prepare data for template placeholders
-        const templateData = {
-            customerName: warrantyRecords[0].customerName,
-            years: warrantyRecords[0].years,
-            startDate: warrantyRecords[0].start,
-            productList,
-        };
-
-        // Load and populate the Word template
-        const templatePath = path.join(__dirname, '../resources', 'LCD warranty template.docx');
+        // Read the template file
         const content = fs.readFileSync(templatePath, 'binary');
         const zip = new PizZip(content);
         const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-        // Render the document with data
-        doc.render(templateData);
+        // Generate the <Products> list
+        const productList = warrantyRecords
+            .map((record, index) => `${String.fromCharCode(97 + index)}) ${record['Item Name']}, serial number: ${record['Serial Number']}`)
+            .join('\n');
+        console.log("After generating <Products> list");
 
+        // Replace placeholders
+        const templateData = {
+            CustomerName: warrantyRecords[0]['Customer Name'],
+            Years: warrantyRecords[0]['Years'],
+            Start: warrantyRecords[0]['Start'],
+            Products: productList,
+        };
+
+        doc.setData(templateData);
+        doc.render();
+        console.log("After replacing placeholders");
+
+        // Save the filled template as a DOCX file
         const outputDir = path.join(__dirname, '../downloads');
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        }
+        if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-        const outputWordPath = path.join(outputDir, 'warranty.docx');
-        const outputPDFPath = path.join(outputDir, 'warranty.pdf');
-
-        // Write the populated Word document
+        const outputPath = path.join(outputDir, `Warranty_${invoiceNumber}.docx`);
         const buf = doc.getZip().generate({ type: 'nodebuffer' });
-        fs.writeFileSync(outputWordPath, buf);
+        fs.writeFileSync(outputPath, buf);
 
-        // Convert DOCX to HTML using mammoth
-        const htmlContent = await mammoth.convertToHtml({ path: outputWordPath });
+        console.log("Generated file:", outputPath);
 
-        // Convert HTML to PDF using puppeteer
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.setContent(htmlContent.value);
-        await page.pdf({ path: outputPDFPath, format: 'A4' });
-
-        await browser.close();
-
-        // Respond with the PDF file path
-        res.status(200).json({ success: true, file: outputPDFPath });
-
+        // Stream the file back to the client for download
+        res.setHeader('Content-Disposition', `attachment; filename=Warranty_${invoiceNumber}.docx`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        fs.createReadStream(outputPath).pipe(res);
     } catch (error) {
-        console.error('Error generating warranty PDF:', error.message);
+        console.error('Error generating warranty PDF:', error);
         res.status(500).json({ success: false, message: 'Failed to generate warranty PDF' });
     }
 };
+
 // Export controller functions
 module.exports = {
     getWarrantyRecords: warrantyController,

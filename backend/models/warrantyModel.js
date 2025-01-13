@@ -224,17 +224,15 @@ const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoic
     });
 };
 const generateWarranty = (invoiceNumber) => {
+    console.log("inside model- genreate warranty func");
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM warranty WHERE invoice = ?';
+        const query = 'SELECT * FROM warranty WHERE "Invoice" = ?';
         db.all(query, [invoiceNumber], (err, rows) => {
-            if (err) {
-                return reject(err);
-            }
+            if (err) return reject(err);
             resolve(rows);
         });
     });
 };
-
 // Handle the "Upload to Xero" status toggle
 const toggleXeroStatus = (req, res) => {
     const { invoice, serialNumber } = req.body;
