@@ -79,8 +79,6 @@ const WarrantyPage = () => {
         setIsEditModalOpen(true);
     };
     const handleSaveEdit = (updatedRecord) => {
-        // Update the record in the backend and refresh the table
-        console.log('Updated Record:', updatedRecord);
         fetchWarrantyRecords();
     };
 
@@ -139,13 +137,13 @@ const WarrantyPage = () => {
     }
 
     return (
-        <div className="table-page">
+        <div className="warranty-page">
             <Sidebar />
-            <div className="table-content">
-                <div className="table-header">
+            <div className="warranty-content">
+                <div className="warranty-header" style={{backgroundColor:"transparent", border:"none"}}>
                     <h1>Warranty</h1>
                 </div>
-                <div className="table-search">
+                <div className="warranty-search">
                     <input
                         type="text"
                         placeholder="Customer Number"
@@ -182,8 +180,8 @@ const WarrantyPage = () => {
                         </CSVLink>
                     </div>
                 </div>
-                <div className="table-table-container">
-                    <table className="table-table">
+                <div className="warranty-table-container">
+                    <table className="warranty-table">
                         <thead>
                             <tr>
                                 {csvHeaders.map((header) => (

@@ -123,8 +123,6 @@ const deleteInventoryRecord = (req, res) => {
 };
 
 const updateInventoryRecord = async (oldItemNumber, newItemNumber, itemName, totalQuantity, inStockQuantity, category, length, width, height, weight, unitCost) => {
-    console.log("Update inventory record function in model");
-
     // Check if the edited item number is different from the old one
     if (oldItemNumber.toLowerCase() !== newItemNumber.toLowerCase()) {
         try {

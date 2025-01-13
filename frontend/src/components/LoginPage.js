@@ -14,8 +14,6 @@ const LoginPage = () => {
         try {
             const response = await axios.post('http://localhost:5000/api/login', { username, password }, { withCredentials: true });
             if (response.data.message === 'Login successful!') {
-                // Redirect or show welcome message
-                console.log('Login successful');
                 navigate('/inventories')
             }
         } catch (error) {

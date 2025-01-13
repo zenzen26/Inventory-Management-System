@@ -74,8 +74,6 @@ const createWarrantyRecord = (req, res) => {
         items, // Array of items with details: items, serialNumber, template, years, start
     } = req.body;
 
-    console.log(req.body);
-
     // Validate required fields
     if (!customerName || !customerNumber || !invoice || !invoiceDate || !items || items.length === 0) {
         return res.status(400).json({ message: "All fields are required, and at least one item must be provided." });
@@ -174,7 +172,6 @@ const createWarrantyRecord = (req, res) => {
 // Function to update a warranty record
 const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoice, customerName, items, oldSerialNumber, newSerialNumber, template, years, start, end) => {
     return new Promise((resolve, reject) => {
-        console.log("in warranty model update function");
 
         // Prepare the update query
         const query = `
@@ -225,7 +222,7 @@ const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoic
 };
 const generateWarranty = (invoiceNumber) => {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM warranty WHERE "Invoice" = ?';
+        const query = 'SELECT * FROM warranty WHERE LOWER("Invoice") = LOWER(?)';
         db.all(query, [invoiceNumber], (err, rows) => {
             if (err) return reject(err);
             resolve(rows);

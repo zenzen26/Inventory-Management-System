@@ -47,15 +47,9 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
             weight: weight,
             unitCost: unitCost,
         };
-        
-    
-        console.log('Updated Record:', updatedRecord);
     
         try {
             const response = await axios.put(`http://localhost:5000/api/inventory/edit/${updatedRecord.oldItemNumber}`, updatedRecord);
-
-
-            console.log('Response in try view:', response.data);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',

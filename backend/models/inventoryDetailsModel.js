@@ -371,8 +371,6 @@ const updateSoldStatus = async (serialNumber, itemNumber) => {
         const updateInventoryQuery = `UPDATE "inventories" SET "Total Quantity" = "Total Quantity" + ?, "In-Stock Quantity" = "In-Stock Quantity" + ? WHERE "Item Number" = ?`;
         await runQuery(updateInventoryQuery, [totalQuantityChange, inStockQuantityChange, itemNumber]);
 
-        console.log('Update success', finalStatus);  // Log success
-
         return { success: true, updatedRecord: { 'Serial Number': serialNumber, 'Item Number': itemNumber, 'Sold Status': finalStatus } };
     } catch (error) {
         console.error('Error updating Sold Status:', error.message);

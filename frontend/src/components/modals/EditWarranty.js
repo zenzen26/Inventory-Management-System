@@ -36,8 +36,6 @@ const EditWarrantyModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                     recordToEdit['Years']?.toLowerCase() === 'three-months' ? 'Three-Months' :
                     recordToEdit['Years']?.toLowerCase() === 'six-months' ? 'Six-Months' :
                     '';  // Default to empty string if no matching value
-
-            console.log("Retrieved Years:", recordToEdit['Years'], "   Mapped years: ", mappedYears);
             setYears(mappedYears);
 
             setStart(recordToEdit['Start'] || '');
@@ -62,12 +60,8 @@ const EditWarrantyModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
             end: end
         };
 
-        console.log('Updated Record:', updatedRecord);
-
         try {
             const response = await axios.put(`http://localhost:5000/api/warranty/edit`, updatedRecord)
-
-            console.log('Response in try view:', response.data);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',

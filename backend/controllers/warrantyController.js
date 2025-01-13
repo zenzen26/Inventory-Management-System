@@ -32,7 +32,6 @@ const editWarrantyRecord = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Failed to update warranty record.' });
     }
 };
-
 const generateWarrantyPDF = async (req, res) => {
     const { invoiceNumber } = req.body;
 
@@ -131,9 +130,6 @@ const generateWarrantyPDF = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Failed to generate warranty PDF' });
     }
 };
-
-
-
 // Export controller functions
 module.exports = {
     getWarrantyRecords: warrantyController,

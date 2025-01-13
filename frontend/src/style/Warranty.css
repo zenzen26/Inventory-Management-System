@@ -1,21 +1,21 @@
 /* table Page Styles */
-.table-page {
+.warranty-page {
     display: flex;
 }
 
-.table-content {
+.warranty-content {
     flex-grow: 1;
     padding: 20px;
     margin-left: 250px;
 }
 
-.table-header {
+.warranty-header {
     text-align: left;
     margin-bottom: 20px;
     background-color: transparent;
 }
 
-.table-search {
+.warranty-search {
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
@@ -27,14 +27,14 @@
     border-bottom: 2px solid #ddd;
 }
 
-.table-search input {
+.warranty-search input {
     padding: 8px;
     width: 200px;
     border: 1px solid #ddd;
     border-radius: 10px;
 }
 
-.table-table-container {
+.warranty-table-container {
     overflow-x: auto;
     max-height: 78vh;
     margin-top: 20px;
@@ -46,27 +46,27 @@
 }
 
 /* Custom scrollbar for modern browsers */
-.table-table-container::-webkit-scrollbar {
+.warranty-table-container::-webkit-scrollbar {
     height: 8px;  
     width: 8px;   
 }
 
-.table-table-container::-webkit-scrollbar-track {
+.warranty-table-container::-webkit-scrollbar-track {
     background-color: #f1f1f1;
     border-radius: 10px;
 }
 
-.table-table-container::-webkit-scrollbar-thumb {
+.warranty-table-container::-webkit-scrollbar-thumb {
     background-color: #888;
     border-radius: 10px;
     transition: background-color 0.3s;
 }
 
-.table-table-container::-webkit-scrollbar-thumb:hover {
+.warranty-table-container::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
 
-.table-table {
+.warranty-table {
     width: 100%;
     border-collapse: collapse;
     position: relative;
@@ -76,13 +76,13 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);  
 }
 
-.table-table th, .table-table td {
+.warranty-table th, .table-table td {
     padding: 5px;
     text-align: center;
     border: 1px solid #ddd;
 }
 
-.table-table th {
+.warranty-table th {
     background-color: var(--oxford-blue);
     position: sticky;
     top: 0;
@@ -91,18 +91,17 @@
     border-top: 0 solid black;
 }
 
-.table-table tr:hover {
+.warranty-table tr:hover {
     background-color: var(--orange-web);
     transition: background-color 0.3s ease;  /* Smooth transition */
 }
 
-.table-table td {
+.warranty-table td {
     word-wrap: break-word;
     word-break: break-all;
     border-left: none;
     border-top: none;
 }
-
 
 /* Ensure scrollable content in cells */
 .cell-content {
@@ -199,6 +198,34 @@ transition: background-color 0.3s ease;
 .no {
     background-color: red;
 }
+
+.tooltip-icon {
+    position: relative;
+    cursor: pointer;
+    align-self: center;
+}
+
+.tooltip-icon-img {
+    width: 35px; /* Adjust size as needed */
+    height: 35px;
+}
+
+/* Optional: Custom tooltip if you don't want the native "title" attribute */
+.tooltip-icon:hover::after {
+    content: attr(title); /* Tooltip text from the "title" attribute */
+    position: absolute;
+    top: 150%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    z-index: 10;
+}
+
 
 
 

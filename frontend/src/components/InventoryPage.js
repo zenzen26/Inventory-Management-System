@@ -91,8 +91,6 @@ const InventoryPage = () => {
     };
     
     const handleSaveEdit = (updatedRecord) => {
-        // Update the record in the backend and refresh the table
-        console.log('Updated Record:', updatedRecord);
         fetchInventoryRecords();
     };
 

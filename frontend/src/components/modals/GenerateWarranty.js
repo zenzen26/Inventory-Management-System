@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import '../../style/EditModal.css';
 import CloseIcon from '../../icons/close-icon.svg';
+import WarningIcon from '../../icons/warning-icon.svg';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -36,9 +37,7 @@ const GenerateWarrantyModal = ({ isOpen, onClose }) => {
             const response = await axios.post('http://localhost:5000/api/warranty/generate-pdf', { invoiceNumber: invoice });
     
             if (response.data.success) {
-                const filePath = response.data.filePath;
-                console.log('Generated File Path:', filePath);
-    
+                const filePath = response.data.filePath;    
                 Swal.fire({
                     icon: 'success',
                     title: 'Warranty Generated',
@@ -53,9 +52,6 @@ const GenerateWarrantyModal = ({ isOpen, onClose }) => {
             });
         }
     };
-    
-    
-    
 
     if (!isOpen) return null;
 
@@ -69,17 +65,17 @@ const GenerateWarrantyModal = ({ isOpen, onClose }) => {
                     </button>
                 </div>
                 <div className="modal-body">
-                    <div className="dimensions-row">
+                <div className="dimensions-row">
                         <label style={{ width: "20%" }}>Invoice Number</label>
-                        <input
-                            type="text"
-                            id="invoice"
-                            value={invoice}
-                            onChange={(e) => setInvoice(e.target.value)}
-                        />
-                        <button className="add-button" onClick={handleSearch}>Search</button>
-                    </div>
-
+                        <span className="tooltip-icon" title="Enter the exact invoice number to generate warranty card"><img src={WarningIcon} alt="Close" className="tooltip-icon-img"/></span>
+                    <input
+                        type="text"
+                        id="invoice"
+                        value={invoice}
+                        onChange={(e) => setInvoice(e.target.value)}
+                    />
+                    <button className="add-button" onClick={handleSearch}>Search</button>
+                </div>
                     <div className="table-container" style={{ overflowX: "auto" }}>
                         <div className="table-wrapper" style={{ display: "flex", flexDirection: "column", width: "100%" }}>
                             {/* Table Header */}

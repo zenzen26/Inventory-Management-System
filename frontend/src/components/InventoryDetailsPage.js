@@ -97,8 +97,6 @@ const InventoryDetailsPage = () => {
     };
     
     const handleSaveEdit = (updatedRecord) => {
-        // Update the record in the backend and refresh the table
-        console.log('Updated Record:', updatedRecord);
         fetchInventoryDetailsRecords();
     };
 
@@ -109,8 +107,6 @@ const InventoryDetailsPage = () => {
                 serialNumber: record['Serial Number'],
                 itemNumber: record['Item Number'],
             });
-    
-            console.log(response.data);  // Log the response from backend
     
             if (response.data.success) {
                 const updatedStatus = record['Sold Status'] === 'Sold' ? 'Not Sold' : 'Sold';
