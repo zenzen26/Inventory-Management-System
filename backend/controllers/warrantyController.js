@@ -34,7 +34,6 @@ const editWarrantyRecord = async (req, res) => {
 };
 
 const generateWarrantyPDF = async (req, res) => {
-    console.log("In warranty controller: generateWarrantyPDF");
     const { invoiceNumber } = req.body;
 
     if (!invoiceNumber) {
@@ -44,57 +43,96 @@ const generateWarrantyPDF = async (req, res) => {
     try {
         // Fetch records associated with the invoice
         const warrantyRecords = await generateWarranty(invoiceNumber);
+
         if (!warrantyRecords || warrantyRecords.length === 0) {
             return res.status(404).json({ success: false, message: 'No warranty records found for this invoice.' });
         }
-        console.log("After fetching records");
 
-        // Determine the template
-        const templateName = 'LCD warranty template.docx';
-        const templatePath = path.join(__dirname, '../resources', templateName);
+        // Group warranty records by Years, Template, and Start
+        const groupedRecords = warrantyRecords.reduce((groups, record) => {
+            const key = `${record['Years']}_${record['Template']}_${record['Start']}`;
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(record);
+            return groups;
+        }, {});
 
-        // Read the template file
-        const content = fs.readFileSync(templatePath, 'binary');
-        const zip = new PizZip(content);
-        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-        // Generate the <Products> list
-        const productList = warrantyRecords
-            .map((record, index) => `${String.fromCharCode(97 + index)}) ${record['Item Name']}, serial number: ${record['Serial Number']}`)
-            .join('\n');
-        console.log("After generating <Products> list");
-
-        // Replace placeholders
-        const templateData = {
-            CustomerName: warrantyRecords[0]['Customer Name'],
-            Years: warrantyRecords[0]['Years'],
-            Start: warrantyRecords[0]['Start'],
-            Products: productList,
+        // Define the mapping for template names
+        const templateMapping = {
+            LCD: 'LCD warranty template.docx',
+            LED: 'LED warranty template.docx',
         };
 
-        doc.setData(templateData);
-        doc.render();
-        console.log("After replacing placeholders");
-
-        // Save the filled template as a DOCX file
-        const outputDir = path.join(__dirname, '../downloads');
+        // Generate a DOCX file for each group
+        const outputDir = path.join('C:\\Users\\Admin\\Downloads');
         if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-        const outputPath = path.join(outputDir, `Warranty_${invoiceNumber}.docx`);
-        const buf = doc.getZip().generate({ type: 'nodebuffer' });
-        fs.writeFileSync(outputPath, buf);
+        const filePaths = [];
+        let fileCounter = 1; // To track file names for incrementing
 
-        console.log("Generated file:", outputPath);
+        // Loop through each group and generate a DOCX file
+        for (const groupKey in groupedRecords) {
+            const group = groupedRecords[groupKey];
 
-        // Stream the file back to the client for download
-        res.setHeader('Content-Disposition', `attachment; filename=Warranty_${invoiceNumber}.docx`);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        fs.createReadStream(outputPath).pipe(res);
+            // Get the template name based on the group or default to LCD
+            const templateName = templateMapping[group[0]['Template']] || 'LCD warranty template.docx'; // Default to 'LCD warranty template.docx'
+            const templatePath = path.join(__dirname, '../resources', templateName);
+
+            // Debugging: log the template path
+            console.log(`Using template: ${templatePath}`);
+
+            // Check if the template file exists
+            if (!fs.existsSync(templatePath)) {
+                console.error(`Template file not found: ${templatePath}`);
+                return res.status(500).json({ success: false, message: `Template file not found: ${templatePath}` });
+            }
+
+            // Read and prepare the template
+            const content = fs.readFileSync(templatePath, 'binary');
+            const zip = new PizZip(content);
+            const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+            // Generate the <Products> list with proper indentation
+            const productList = group
+                .map((record, index) => `${String.fromCharCode(97 + index)}) ${record['Items']}, serial number: ${record['Serial Number']}`)
+                .join('\n\t'); // Add a tab character for indentation
+
+            // Replace placeholders
+            const templateData = {
+                CustomerName: group[0]['Customer Name'] || '',
+                Years: group[0]['Years'] || '',
+                Start: group[0]['Start'] || '',
+                Products: productList || '',
+            };
+
+            doc.setData(templateData);
+            doc.render();
+
+            // Generate file path with invoice number and incremented filenames if multiple files
+            const outputFilePath = path.join(outputDir, 
+                fileCounter === 1 
+                    ? `${invoiceNumber} Warranty.docx`  // If it's the first file, use the invoice number
+                    : `${invoiceNumber} Warranty ${fileCounter}.docx`  // If there are multiple files, increment the filename
+            );
+
+            // Ensure no duplicate writes
+            const buf = doc.getZip().generate({ type: 'nodebuffer' });
+            fs.writeFileSync(outputFilePath, buf);
+            filePaths.push(outputFilePath);
+
+            console.log(`File generated successfully: ${outputFilePath}`);
+            fileCounter++;
+        }
+
+        return res.status(200).json({ success: true, filePaths });
     } catch (error) {
         console.error('Error generating warranty PDF:', error);
-        res.status(500).json({ success: false, message: 'Failed to generate warranty PDF' });
+        return res.status(500).json({ success: false, message: 'Failed to generate warranty PDF' });
     }
 };
+
+
 
 // Export controller functions
 module.exports = {

@@ -224,7 +224,6 @@ const updateWarrantyRecord = (customerNumber, invoiceDate, oldInvoice, newInvoic
     });
 };
 const generateWarranty = (invoiceNumber) => {
-    console.log("inside model- genreate warranty func");
     return new Promise((resolve, reject) => {
         const query = 'SELECT * FROM warranty WHERE "Invoice" = ?';
         db.all(query, [invoiceNumber], (err, rows) => {
