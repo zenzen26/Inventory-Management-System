@@ -24,19 +24,7 @@ const InventoryDetailsPage = () => {
     const navigate = useNavigate();
 
     // Function to check if the user is logged in
-    const checkAuth = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/api/auth-check', { withCredentials: true });
-            if (response.data.loggedIn) {
-                setLoggedIn(true);
-            } else {
-                navigate('/');
-            }
-        } catch (error) {
-            console.error('Error checking authentication:', error);
-            navigate('/');
-        }
-    };
+
 
     // Function to fetch inventory details records
     const fetchInventoryDetailsRecords = async () => {
@@ -136,10 +124,6 @@ const InventoryDetailsPage = () => {
         { label: 'Remark', key: 'Remark' },
         { label: 'Sold Status', key: 'Sold Status' },
     ];
-
-    useEffect(() => {
-        checkAuth();
-    }, []);
 
     useEffect(() => {
         if (loggedIn) {

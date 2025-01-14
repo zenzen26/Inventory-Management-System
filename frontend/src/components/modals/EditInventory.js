@@ -99,7 +99,6 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                             value={itemName}
                             onChange={(e) => setItemName(e.target.value)}
                         />
-
                         <div className="dimensions-row">
                             <div>
                                 <label style={{ color: "red" }}>Total Quantity

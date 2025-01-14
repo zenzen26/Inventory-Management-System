@@ -22,6 +22,19 @@ app.use(session({
 // Login Route
 app.post('/api/login', authController.loginUser);
 
+// Logout Route
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send('Failed to log out');
+        }
+
+        res.clearCookie('connect.sid');  // Clear session cookie (if needed)
+        res.json({ message: 'Logged out successfully' });  // Send a response
+    });
+});
+
+
 // Auth Check Route
 app.get('/api/auth-check', (req, res) => {
     if (req.session.user) {
