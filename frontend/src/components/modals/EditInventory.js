@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../style/EditModal.css';
 import CloseIcon from '../../icons/close-icon.svg';
+import WarningIcon from '../../icons/warning-icon.svg';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -81,7 +82,11 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                 </div>
                 <div className="modal-body">
                     <form>
-                        <label style={{ color: "red" }}>Item Number (Caution)</label>
+                        <label style={{ color: "red" }}>Item Number
+                            <span className="tooltip-icon" title="Editing this may affect the records in Details page">
+                                <img src={WarningIcon} alt="Warning" className="tooltip-icon-img"/>
+                            </span>
+                        </label>
                         <input
                             type="text"
                             value={itemNumber}
@@ -97,7 +102,11 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
 
                         <div className="dimensions-row">
                             <div>
-                                <label style={{ color: "red" }}>Total Quantity (Caution)</label>
+                                <label style={{ color: "red" }}>Total Quantity
+                                    <span className="tooltip-icon" title="Editing this may affect the records in Details page and calculations of the stock in this page">
+                                        <img src={WarningIcon} alt="Warning" className="tooltip-icon-img"/>
+                                    </span>
+                                </label>
                                 <input
                                     type="number"
                                     value={totalQuantity}
@@ -105,7 +114,11 @@ const EditInventoryModal = ({ isOpen, onClose, recordToEdit, onSave }) => {
                                 />
                             </div>
                             <div>
-                                <label style={{ color: "red" }}>In-Stock Quantity (Caution)</label>
+                                <label style={{ color: "red" }}>In-Stock Quantity
+                                    <span className="tooltip-icon" title="Editing this may affect the records in Details page and calculations of the stock in this page">
+                                        <img src={WarningIcon} alt="Warning" className="tooltip-icon-img"/>
+                                    </span>
+                                </label>
                                 <input
                                     type="number"
                                     value={inStockQuantity}

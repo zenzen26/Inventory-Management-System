@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../style/EditModal.css';
 import CloseIcon from '../../icons/close-icon.svg';
+import WarningIcon from '../../icons/warning-icon.svg';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -63,22 +64,32 @@ const EditInventoryDetailsModal = ({ isOpen, onClose, recordToEdit, onSave }) =>
                     <button className="modal-close-button" onClick={onClose}><img src={CloseIcon} alt="Close" /></button>
                 </div>
                 <form>
-                    <div className="form-group" style={{color:"red"}}>
-                        <label>Serial Number (Caution)</label>
-                        <input
-                            type="text"
-                            value={serialNumber}
-                            onChange={(e) => setSerialNumber(e.target.value)}
-                        />
-                    </div>
-                    <div className="form-group" style={{color:"red"}}>
-                        <label>Item Number (Caution)</label>
-                        <input
-                            type="text"
-                            value={itemNumber}
-                            onChange={(e) => setItemNumber(e.target.value)}
-                        />
-                    </div>
+                <div className="form-group" style={{ color: "red" }}>
+                    <label>
+                        Serial Number 
+                        <span className="tooltip-icon" title="Editing this may affect the total/stock quantities calculation in the Inventory page">
+                            <img src={WarningIcon} alt="Warning" className="tooltip-icon-img"/>
+                        </span>
+                    </label>
+                    <input
+                        type="text"
+                        value={serialNumber}
+                        onChange={(e) => setSerialNumber(e.target.value)}
+                    />
+                </div>
+                <div className="form-group" style={{ color: "red" }}>
+                    <label>
+                        Item Number 
+                        <span className="tooltip-icon" title="Editing this may affect the total/stock quantities calculation in the Inventory page">
+                            <img src={WarningIcon} alt="Warning" className="tooltip-icon-img"/>
+                        </span>
+                    </label>
+                    <input
+                        type="text"
+                        value={itemNumber}
+                        onChange={(e) => setItemNumber(e.target.value)}
+                    />
+                </div>
                     <div className="form-group">
                         <label>Supplier ID</label>
                         <input

@@ -129,3 +129,33 @@ input {
     background: rgb(189, 118, 60);
 }
 
+.tooltip-icon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.tooltip-icon-img {
+    width: 16px; /* Adjust size as needed */
+    height: 16px;
+}
+
+/* Optional: Custom tooltip styling if you want to go beyond the native 'title' attribute */
+.tooltip-icon:hover::after {
+    content: attr(title); /* Tooltip text from the 'title' attribute */
+    position: absolute;
+    top: 150%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    z-index: 10;
+}
+
+
